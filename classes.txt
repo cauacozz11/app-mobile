@@ -1,0 +1,117 @@
+ENTIDADES DO DOMÍNIO — app-mobile
+Projeto acadêmico de Engenharia de Software
+Registro elaborado a partir da entrevista com o cliente e do escopo definido para a N1
+
+===============================================================
+VISÃO GERAL
+===============================================================
+O sistema tem como objetivo automatizar a geração e a correção de
+provas em papel, a partir da leitura de folhas de resposta. As
+entidades abaixo representam os principais conceitos do domínio,
+identificados a partir da entrevista com o cliente (professor) e
+organizados para servir de base ao modelo de dados do aplicativo.
+
+===============================================================
+1. Usuario
+===============================================================
+Representa o professor que utiliza o sistema para criar provas,
+gerenciar turmas e visualizar os resultados das correções.
+
+Atributos:
+- id
+- nome
+- email
+- senha
+
+===============================================================
+2. Questao
+===============================================================
+Representa uma questão de múltipla escolha cadastrada no banco de
+questões do professor, reutilizável em diferentes provas.
+
+Atributos:
+- id
+- enunciado
+- alternativas (lista de Alternativa)
+- indiceAlternativaCorreta
+
+===============================================================
+3. Alternativa
+===============================================================
+Representa uma opção de resposta de uma Questao.
+
+Atributos:
+- texto
+- ordem (posição de exibição dentro da questão)
+
+===============================================================
+4. Prova
+===============================================================
+Representa o modelo base de uma avaliação, composto por um
+conjunto de questões selecionadas do banco de questões.
+
+Atributos:
+- id
+- titulo
+- disciplina
+- questoes (lista de Questao)
+- dataCriacao
+
+===============================================================
+5. VariacaoProva
+===============================================================
+Representa uma versão individual e embaralhada de uma Prova,
+gerada para cada aluno. É a entidade responsável por viabilizar
+o embaralhamento de questões e alternativas, e pela identificação
+via QR code na hora da correção.
+
+Atributos:
+- id
+- provaId (referência à Prova original)
+- ordemQuestoes (ordem embaralhada das questões nesta variação)
+- ordemAlternativas (ordem embaralhada das alternativas por questão)
+- qrCodeId (identificador único codificado no QR code impresso)
+
+===============================================================
+6. Turma
+===============================================================
+Representa um agrupamento de alunos de uma mesma disciplina/sala.
+
+Atributos:
+- id
+- nome
+- alunos (lista de Aluno)
+
+===============================================================
+7. Aluno
+===============================================================
+Representa o aluno que realiza a prova.
+
+Atributos:
+- id
+- nome
+- matricula
+
+===============================================================
+8. Resultado
+===============================================================
+Representa o resultado da correção de uma prova aplicada a um
+aluno específico, incluindo as respostas marcadas e a nota obtida.
+
+Atributos:
+- id
+- alunoId (referência ao Aluno)
+- variacaoProvaId (referência à VariacaoProva corrigida)
+- respostasMarcadas (lista de respostas assinaladas pelo aluno)
+- nota
+
+===============================================================
+RELACIONAMENTOS PRINCIPAIS
+===============================================================
+- Um Usuario cria várias Prova.
+- Uma Prova é composta por várias Questao.
+- Uma Questao possui várias Alternativa.
+- Uma Prova origina várias VariacaoProva (uma por aluno/aplicação).
+- Uma Turma possui vários Aluno.
+- Um Resultado conecta um Aluno a uma VariacaoProva específica,
+  registrando o desempenho daquele aluno naquela aplicação da prova.
