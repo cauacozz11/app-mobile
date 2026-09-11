@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'screens/splash.dart';
+import 'screens/questoes/listagem_questoes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const SplashScreen(),
+      home: const ListagemQuestoesScreen(),
     );
   }
 }
