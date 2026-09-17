@@ -42,7 +42,4 @@ google-services.json
 .pub/
 
 # Editor
-.vscode/
-
-# docs
-docClaude.txt
+.vscode/

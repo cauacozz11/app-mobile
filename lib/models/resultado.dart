@@ -1,4 +1,3 @@
-import 'package:app_mobile/models/prova.dart';
 
 class Resultado {
   final String id;

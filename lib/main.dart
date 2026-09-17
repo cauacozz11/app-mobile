@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'screens/splash.dart';
+import 'screens/provas/listagem_provas_screen.dart';
+import 'screens/provas/criar_prova_screen.dart';
+import 'screens/questoes/banco_questoes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,12 +15,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'App Mobile',
+      title: 'ProvaLeve',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        fontFamily: 'sans-serif',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF22555A),
+          primary: const Color(0xFF22555A),
+        ),
       ),
-      home: const SplashScreen(),
+      initialRoute: '/provas',
+      routes: {
+        '/splash': (context) => const SplashScreen(),
+        '/provas': (context) => const ListagemProvasScreen(),
+        '/criar-prova': (context) => const CriarProvaScreen(),
+        '/questoes': (context) => const BancoQuestoesScreen(),
+      },
     );
   }
 }
