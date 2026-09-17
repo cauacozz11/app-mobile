@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 
 import 'package:app_mobile/models/prova.dart';
+import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/models/resultado.dart';
-import 'package:app_mobile/screens/splash.dart';
 
 enum _Filtro { todas, acertos, erros }
+
+// Cores da tela de resultado
+class _Cores {
+  static const fundo = Color(0xFFFCFDFC);
+  static const titulo = Color(0xFF064D65);
+  static const texto = Color(0xFF173568);
+  static const secundario = Color(0xFF586F98);
+  static const teal = Color(0xFF087D8B);
+  static const verde = Color(0xFF16846C);
+  static const vermelho = Color(0xFFBD3F3C);
+  static const acerto = Color(0xFFF0F8F4);
+  static const erro = Color(0xFFFFF3F3);
+  static const seloAcerto = Color(0xFFDFF1E9);
+  static const seloErro = Color(0xFFFFDEDC);
+  static const linha = Color(0xFFEDF0F0);
+}
 
 class ResultadoProvaScreen extends StatefulWidget {
   const ResultadoProvaScreen({
@@ -23,7 +39,23 @@ class ResultadoProvaScreen extends StatefulWidget {
 class _ResultadoProvaScreenState extends State<ResultadoProvaScreen> {
   _Filtro _filtro = _Filtro.todas;
 
-  String _letra(int indice) => String.fromCharCode(65 + indice);
+  int _resposta(int indice) =>
+      indice < widget.resultado.respostasMarcadas.length
+      ? widget.resultado.respostasMarcadas[indice]
+      : -1;
+
+  bool _acertou(int indice) {
+    final questao = widget.prova.questoes[indice];
+    final resposta = _resposta(indice);
+    return resposta >= 0 &&
+        resposta < questao.alternativas.length &&
+        resposta == questao.indiceAlternativaCorreta;
+  }
+
+  String _letra(Questao questao, int indice) =>
+      indice >= 0 && indice < questao.alternativas.length
+      ? String.fromCharCode(65 + indice)
+      : 'Não respondida';
 
   String _mensagemDesempenho(double percentual) {
     if (percentual >= 0.9) return 'Excelente!';
@@ -32,143 +64,183 @@ class _ResultadoProvaScreenState extends State<ResultadoProvaScreen> {
     return 'Vamos praticar mais';
   }
 
+  void _compartilhar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compartilhamento ainda não disponível nesta versão.'),
+      ),
+    );
+  }
+
+  void _voltar() => Navigator.of(context).maybePop();
+
+  void _abrirQuestao(int indice) {
+    final questao = widget.prova.questoes[indice];
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Questão ${indice + 1}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _Cores.titulo,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(questao.enunciado),
+              const SizedBox(height: 16),
+              for (var i = 0; i < questao.alternativas.length; i++)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Text(_letra(questao, i)),
+                  title: Text(questao.alternativas[i].texto),
+                  subtitle: i == _resposta(indice)
+                      ? const Text('Sua resposta')
+                      : null,
+                  trailing: i == questao.indiceAlternativaCorreta
+                      ? const Icon(Icons.check, color: _Cores.verde)
+                      : null,
+                ),
+              const SizedBox(height: 8),
+              Text(
+                'Resposta correta: ${_letra(questao, questao.indiceAlternativaCorreta)}',
+                style: const TextStyle(
+                  color: _Cores.verde,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final questoes = widget.prova.questoes;
-    final respostas = widget.resultado.respostasMarcadas;
-
-    final acertosIndices = <int>[];
-    final errosIndices = <int>[];
-    for (var i = 0; i < questoes.length; i++) {
-      if (respostas[i] == questoes[i].indiceAlternativaCorreta) {
-        acertosIndices.add(i);
-      } else {
-        errosIndices.add(i);
-      }
-    }
-
-    final percentual = questoes.isEmpty ? 0.0 : acertosIndices.length / questoes.length;
-
-    final indicesVisiveis = switch (_filtro) {
-      _Filtro.todas => List.generate(questoes.length, (i) => i),
-      _Filtro.acertos => acertosIndices,
-      _Filtro.erros => errosIndices,
-    };
+    final acertos = List.generate(
+      questoes.length,
+      (i) => i,
+    ).where(_acertou).length;
+    final percentual = questoes.isEmpty ? 0.0 : acertos / questoes.length;
+    final indices = List.generate(questoes.length, (i) => i)
+        .where(
+          (i) => switch (_filtro) {
+            _Filtro.todas => true,
+            _Filtro.acertos => _acertou(i),
+            _Filtro.erros => !_acertou(i),
+          },
+        )
+        .toList();
 
     return Scaffold(
-      backgroundColor: SplashScreen.background,
+      backgroundColor: _Cores.fundo,
       appBar: AppBar(
-        backgroundColor: SplashScreen.background,
+        backgroundColor: _Cores.fundo,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: SplashScreen.teal),
+        scrolledUnderElevation: 0,
+        leadingWidth: 48,
+        leading: IconButton(
+          tooltip: 'Voltar',
+          onPressed: _voltar,
+          icon: const Icon(Icons.chevron_left, color: _Cores.titulo),
+        ),
+        titleSpacing: 0,
         title: const Text(
           'Resultado da prova',
           style: TextStyle(
-            color: SplashScreen.teal,
+            color: _Cores.titulo,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert, color: SplashScreen.teal),
+          PopupMenuButton<String>(
+            tooltip: 'Mais opções',
+            icon: const Icon(Icons.more_vert, color: _Cores.titulo),
+            onSelected: (value) =>
+                value == 'compartilhar' ? _compartilhar() : _voltar(),
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'compartilhar', child: Text('Compartilhar')),
+              PopupMenuItem(value: 'voltar', child: Text('Voltar às provas')),
+            ],
           ),
         ],
       ),
+      bottomNavigationBar: _Rodape(
+        onCompartilhar: _compartilhar,
+        onVoltar: _voltar,
+      ),
       body: SafeArea(
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+          padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
           children: [
             _CartaoResumo(
               prova: widget.prova,
               nota: widget.resultado.nota,
-              acertos: acertosIndices.length,
-              total: questoes.length,
+              acertos: acertos,
               mensagem: _mensagemDesempenho(percentual),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               children: [
+                Expanded(child: _CartaoContagem(valor: acertos, acerto: true)),
+                const SizedBox(width: 10),
                 Expanded(
                   child: _CartaoContagem(
-                    icone: Icons.check_circle,
-                    cor: SplashScreen.teal,
-                    valor: acertosIndices.length,
-                    label: 'Acertos',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _CartaoContagem(
-                    icone: Icons.cancel,
-                    cor: SplashScreen.orange,
-                    valor: errosIndices.length,
-                    label: 'Erros',
+                    valor: questoes.length - acertos,
+                    acerto: false,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             _FiltroTabs(
               filtroAtual: _filtro,
               onSelecionar: (f) => setState(() => _filtro = f),
             ),
-            const SizedBox(height: 16),
-            ...indicesVisiveis.map((i) {
-              final questao = questoes[i];
-              final marcou = respostas[i];
-              final acertou = marcou == questao.indiceAlternativaCorreta;
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+            const SizedBox(height: 12),
+            if (indices.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  switch (_filtro) {
+                    _Filtro.todas => 'Esta prova não tem questões.',
+                    _Filtro.acertos => 'Nenhuma questão correta.',
+                    _Filtro.erros => 'Nenhuma questão incorreta.',
+                  },
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: _Cores.secundario),
+                ),
+              ),
+            for (final i in indices)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
                 child: _QuestaoResultadoCard(
                   numero: i + 1,
-                  enunciado: questao.enunciado,
-                  respostaMarcada: _letra(marcou),
-                  respostaCorreta: _letra(questao.indiceAlternativaCorreta),
-                  acertou: acertou,
-                ),
-              );
-            }),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Compartilhamento ainda não disponível nesta versão.')),
-                      );
-                    },
-                    icon: const Icon(Icons.ios_share, size: 18),
-                    label: const Text('Compartilhar'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: SplashScreen.teal,
-                      side: const BorderSide(color: SplashScreen.teal),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
+                  enunciado: questoes[i].enunciado,
+                  respostaMarcada: _letra(questoes[i], _resposta(i)),
+                  respostaCorreta: _letra(
+                    questoes[i],
+                    questoes[i].indiceAlternativaCorreta,
                   ),
+                  acertou: _acertou(i),
+                  onTap: () => _abrirQuestao(i),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: SplashScreen.teal,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Text('Voltar às provas'),
-                  ),
-                ),
-              ],
-            ),
+              ),
           ],
         ),
       ),
@@ -176,220 +248,252 @@ class _ResultadoProvaScreenState extends State<ResultadoProvaScreen> {
   }
 }
 
+BoxDecoration _cartao({double raio = 12}) => BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(raio),
+  border: Border.all(color: _Cores.linha),
+  boxShadow: const [
+    BoxShadow(color: Color(0x07064D65), offset: Offset(0, 3), blurRadius: 8),
+  ],
+);
+
 class _CartaoResumo extends StatelessWidget {
   const _CartaoResumo({
     required this.prova,
     required this.nota,
     required this.acertos,
-    required this.total,
     required this.mensagem,
   });
-
   final Prova prova;
   final double nota;
   final int acertos;
-  final int total;
   final String mensagem;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: SplashScreen.cardWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SplashScreen.grayLine.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: _cartao(),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          prova.titulo,
+          style: const TextStyle(
+            color: _Cores.texto,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          prova.disciplina,
+          style: const TextStyle(color: _Cores.secundario, fontSize: 13),
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            SizedBox(
+              width: 140,
+              height: 140,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox.expand(
+                    child: CircularProgressIndicator(
+                      value: prova.questoes.isEmpty
+                          ? 0
+                          : acertos / prova.questoes.length,
+                      strokeWidth: 11,
+                      strokeCap: StrokeCap.round,
+                      backgroundColor: const Color(0xFFDBEFED),
+                      color: const Color(0xFF159698),
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        nota.toStringAsFixed(1).replaceAll('.', ','),
+                        style: const TextStyle(
+                          color: _Cores.titulo,
+                          fontSize: 42,
+                          height: 1.1,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const Text(
+                        'de 10',
+                        style: TextStyle(
+                          color: _Cores.secundario,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 22),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _Brilhos(),
+                  const SizedBox(height: 8),
+                  Text(
+                    mensagem,
+                    style: const TextStyle(
+                      color: _Cores.titulo,
+                      fontSize: 24,
+                      height: 1.1,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Você acertou $acertos de ${prova.questoes.length} questões',
+                    style: const TextStyle(
+                      color: _Cores.secundario,
+                      fontSize: 13,
+                      height: 1.2,
+                    ),
+                  ),
+                  const Align(
+                    alignment: Alignment.centerRight,
+                    child: _Brilhos(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+      ],
+    ),
+  );
+}
+
+class _Brilhos extends StatelessWidget {
+  const _Brilhos();
+  @override
+  Widget build(BuildContext context) => const ExcludeSemantics(
+    child: SizedBox(
+      width: 40,
+      height: 25,
+      child: Stack(
         children: [
-          Text(
-            prova.titulo,
-            style: const TextStyle(
-              color: SplashScreen.teal,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: Icon(
+              Icons.star_rate_rounded,
+              size: 14,
+              color: Color(0xFF98CEBD),
             ),
           ),
-          Text(
-            prova.disciplina,
-            style: const TextStyle(
-              color: SplashScreen.subtitleColor,
-              fontSize: 13,
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Icon(
+              Icons.star_rate_rounded,
+              size: 21,
+              color: Color(0xFF98CEBD),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              SizedBox(
-                width: 88,
-                height: 88,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 88,
-                      height: 88,
-                      child: CircularProgressIndicator(
-                        value: total == 0 ? 0 : acertos / total,
-                        strokeWidth: 8,
-                        backgroundColor: SplashScreen.sage.withValues(alpha: 0.25),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          SplashScreen.teal,
-                        ),
-                      ),
-                    ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          nota.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: SplashScreen.teal,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const Text(
-                          'de 10',
-                          style: TextStyle(
-                            color: SplashScreen.subtitleColor,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      mensagem,
-                      style: const TextStyle(
-                        color: SplashScreen.teal,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Você acertou $acertos de $total questões',
-                      style: const TextStyle(
-                        color: SplashScreen.subtitleColor,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _CartaoContagem extends StatelessWidget {
-  const _CartaoContagem({
-    required this.icone,
-    required this.cor,
-    required this.valor,
-    required this.label,
-  });
-
-  final IconData icone;
-  final Color cor;
+  const _CartaoContagem({required this.valor, required this.acerto});
   final int valor;
-  final String label;
-
+  final bool acerto;
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: SplashScreen.cardWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SplashScreen.grayLine.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        children: [
-          Icon(icone, color: cor),
-          const SizedBox(height: 6),
-          Text(
-            '$valor',
-            style: TextStyle(
-              color: cor,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+    decoration: _cartao(),
+    child: Row(
+      children: [
+        CircleAvatar(
+          radius: 22,
+          backgroundColor: acerto ? _Cores.seloAcerto : _Cores.seloErro,
+          child: Icon(
+            acerto ? Icons.check : Icons.close,
+            color: acerto ? _Cores.verde : _Cores.vermelho,
+            size: 24,
           ),
-          Text(
-            label,
-            style: const TextStyle(
-              color: SplashScreen.subtitleColor,
-              fontSize: 12,
-            ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$valor',
+                style: const TextStyle(
+                  color: _Cores.texto,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                acerto ? 'Acertos' : 'Erros',
+                style: const TextStyle(color: _Cores.secundario, fontSize: 12),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
 
 class _FiltroTabs extends StatelessWidget {
   const _FiltroTabs({required this.filtroAtual, required this.onSelecionar});
-
   final _Filtro filtroAtual;
   final ValueChanged<_Filtro> onSelecionar;
-
   @override
-  Widget build(BuildContext context) {
-    Widget pill(_Filtro filtro, String texto) {
-      final selecionado = filtro == filtroAtual;
-      return Expanded(
-        child: GestureDetector(
-          onTap: () => onSelecionar(filtro),
-          child: Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: selecionado ? SplashScreen.teal : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              texto,
-              style: TextStyle(
-                color: selecionado ? Colors.white : SplashScreen.subtitleColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: _cartao(raio: 16),
+    child: Row(
+      children: [
+        for (final filtro in _Filtro.values)
+          Expanded(
+            child: Semantics(
+              selected: filtro == filtroAtual,
+              child: TextButton(
+                onPressed: () => onSelecionar(filtro),
+                style: TextButton.styleFrom(
+                  backgroundColor: filtro == filtroAtual
+                      ? _Cores.teal
+                      : Colors.transparent,
+                  foregroundColor: filtro == filtroAtual
+                      ? Colors.white
+                      : _Cores.secundario,
+                  minimumSize: const Size(0, 36),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                child: Text(switch (filtro) {
+                  _Filtro.todas => 'Todas',
+                  _Filtro.acertos => 'Acertos',
+                  _Filtro.erros => 'Erros',
+                }),
               ),
             ),
           ),
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: SplashScreen.cardWhite,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: SplashScreen.grayLine.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          pill(_Filtro.todas, 'Todas'),
-          pill(_Filtro.acertos, 'Acertos'),
-          pill(_Filtro.erros, 'Erros'),
-        ],
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }
 
 class _QuestaoResultadoCard extends StatelessWidget {
@@ -399,90 +503,182 @@ class _QuestaoResultadoCard extends StatelessWidget {
     required this.respostaMarcada,
     required this.respostaCorreta,
     required this.acertou,
+    required this.onTap,
   });
-
   final int numero;
   final String enunciado;
   final String respostaMarcada;
   final String respostaCorreta;
   final bool acertou;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final cor = acertou ? SplashScreen.teal : SplashScreen.orange;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: SplashScreen.cardWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cor.withValues(alpha: 0.35)),
+    final cor = acertou ? _Cores.verde : _Cores.vermelho;
+    final selo = acertou ? _Cores.seloAcerto : _Cores.seloErro;
+    return Material(
+      color: acertou ? _Cores.acerto : _Cores.erro,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: selo.withValues(alpha: 0.7)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 14,
-            backgroundColor: SplashScreen.teal.withValues(alpha: 0.10),
-            child: Text(
-              '$numero',
-              style: const TextStyle(
-                color: SplashScreen.teal,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  enunciado,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: SplashScreen.subtitleColor,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Sua resposta: $respostaMarcada',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: SplashScreen.subtitleColor,
-                  ),
-                ),
-                if (!acertou)
-                  Text(
-                    'Correta: $respostaCorreta',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: SplashScreen.teal,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Row(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
+          child: Row(
             children: [
-              Icon(
-                acertou ? Icons.check_circle : Icons.cancel,
-                color: cor,
-                size: 18,
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: selo,
+                child: Text(
+                  '$numero',
+                  style: TextStyle(
+                    color: cor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$numero. $enunciado',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: _Cores.texto,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Sua resposta: $respostaMarcada',
+                      style: const TextStyle(
+                        color: _Cores.secundario,
+                        fontSize: 11,
+                        height: 1.3,
+                      ),
+                    ),
+                    if (!acertou)
+                      Text(
+                        'Correta: $respostaCorreta',
+                        style: const TextStyle(
+                          color: _Cores.secundario,
+                          fontSize: 11,
+                          height: 1.3,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
+                decoration: BoxDecoration(
+                  color: selo,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      acertou ? Icons.check : Icons.close,
+                      color: cor,
+                      size: 13,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      acertou ? 'Correta' : 'Incorreta',
+                      style: TextStyle(
+                        color: cor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 4),
-              Text(
-                acertou ? 'Correta' : 'Incorreta',
-                style: TextStyle(color: cor, fontSize: 12, fontWeight: FontWeight.w600),
+              const Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: Color(0xFF8DA3BD),
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
+}
+
+class _Rodape extends StatelessWidget {
+  const _Rodape({required this.onCompartilhar, required this.onVoltar});
+  final VoidCallback onCompartilhar;
+  final VoidCallback onVoltar;
+  @override
+  Widget build(BuildContext context) => Container(
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      border: Border(top: BorderSide(color: _Cores.linha)),
+    ),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 20),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onCompartilhar,
+                icon: const Icon(Icons.ios_share, size: 20),
+                label: const Text('Compartilhar'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _Cores.titulo,
+                  side: const BorderSide(color: _Cores.linha),
+                  minimumSize: const Size(0, 48),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: onVoltar,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _Cores.teal,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(0, 48),
+                  elevation: 2,
+                  shadowColor: _Cores.teal.withValues(alpha: 0.25),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text('Voltar às provas'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

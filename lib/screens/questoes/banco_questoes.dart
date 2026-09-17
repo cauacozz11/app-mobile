@@ -585,8 +585,18 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildItemMenu(Icons.description_outlined, 'Provas', false,
-                () => _telaEmConstrucao('Provas')),
+            _buildItemMenu(
+              Icons.description_outlined,
+              'Provas',
+              false,
+              () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pushReplacementNamed('/provas');
+                }
+              },
+            ),
             _buildItemMenu(Icons.menu_book_rounded, 'Questões', true, () {}),
             _buildItemMenu(Icons.person_outline, 'Perfil', false,
                 () => _telaEmConstrucao('Perfil')),
