@@ -83,7 +83,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
       _disciplinaSelecionada = prova.disciplina;
       final bancoPorId = {for (final item in banco) item.questao.id: item};
       _questoesSelecionadasIds.addAll(prova.questoes.map((q) => q.id));
-      // Mantém a ordem e os dados do rascunho, mesmo fora do banco mock.
       _questoesDisponiveis = [
         for (final questao in prova.questoes)
           _QuestaoItemBanco(
@@ -98,7 +97,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
       return;
     }
     _questoesDisponiveis = banco;
-    // Seleciona 3 questões iniciais
     if (_questoesDisponiveis.length >= 3) {
       _questoesSelecionadasIds.add(_questoesDisponiveis[0].questao.id);
       _questoesSelecionadasIds.add(_questoesDisponiveis[1].questao.id);
@@ -190,7 +188,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
       ),
       child: Column(
         children: [
-          // Barra de arrasto superior
           const SizedBox(height: 10),
           Center(
             child: Container(
@@ -203,7 +200,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
             ),
           ),
 
-          // Header do Modal: "Criar prova"
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 20, 8),
             child: Row(
@@ -250,12 +246,10 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
           ),
           const Divider(height: 1, color: Color(0xFFE5E2D9)),
 
-          // Corpo rolável do formulário
           Expanded(
             child: ListView(
               padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + bottomInset),
               children: [
-                // Seção: Informações da prova
                 const Text(
                   'Informações da prova',
                   style: TextStyle(
@@ -266,7 +260,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                 ),
                 const SizedBox(height: 12),
 
-                // Título da prova
                 const Text(
                   'Título da prova',
                   style: TextStyle(
@@ -303,7 +296,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                 ),
                 const SizedBox(height: 14),
 
-                // Disciplina (Dropdown)
                 const Text(
                   'Disciplina',
                   style: TextStyle(
@@ -353,7 +345,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                 ),
                 const SizedBox(height: 24),
 
-                // Selecionar questões
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -390,7 +381,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                 ),
                 const SizedBox(height: 12),
 
-                // Busca no banco de questões + botão de filtro
                 Row(
                   children: [
                     Expanded(
@@ -466,7 +456,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                 ),
                 const SizedBox(height: 14),
 
-                // Lista de questões com checkboxes e tags
                 if (filtradas.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(32),
@@ -489,7 +478,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
             ),
           ),
 
-          // Rodapé fixo com total selecionado e botão "Criar prova"
           _buildRodapeConclusao(totalSelecionadas),
         ],
       ),
@@ -520,7 +508,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Checkbox estilizado
             Container(
               width: 22,
               height: 22,
@@ -539,7 +526,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
             ),
             const SizedBox(width: 12),
 
-            // Enunciado e tags de apoio
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,7 +566,6 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
               ),
             ),
 
-            // Seta para ver enunciado completo e alternativas
             IconButton(
               icon: const Icon(
                 Icons.chevron_right_rounded,

@@ -4,7 +4,6 @@ class Questao {
   final String id;
   final String enunciado;
   final List<Alternativa> alternativas;
-  // posição na lista
   final int indiceAlternativaCorreta;
 
   Questao({

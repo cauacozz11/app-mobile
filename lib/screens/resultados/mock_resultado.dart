@@ -3,8 +3,6 @@ import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/models/resultado.dart';
 
-// Dados mock — N1 ainda não tem conexão com banco (Firestore entra na N2)
-
 final provaMock = Prova(
   id: '1',
   titulo: 'Avaliação 02',
@@ -114,7 +112,6 @@ final provaMock = Prova(
   ],
 );
 
-// Resultado fictício: 8 acertos e 2 erros (questões 3 e 7 marcadas errado)
 final resultadoMock = Resultado(
   id: 'r1',
   provaId: provaMock.id,

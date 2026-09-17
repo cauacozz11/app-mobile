@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/questao.dart';
+import 'package:app_mobile/screens/perfil/perfil_screen.dart';
+
 import 'nova_questao.dart';
 import 'questao_cadastrada.dart';
 
-// Paleta compartilhada com as demais telas (ver splash.dart)
 class _Cores {
   static const Color background = Color(0xFFF8F5F0);
   static const Color teal = Color(0xFF22555A);
@@ -45,7 +46,6 @@ class BancoQuestoesScreen extends StatefulWidget {
 }
 
 class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
-  // Mock em memória (sem Firebase/Firestore) — ver especificacao_n1.md, seção 1.
   final List<QuestaoCadastrada> _questoes = [
     QuestaoCadastrada(
       disciplina: 'Matemática',
@@ -219,9 +219,11 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
     }
   }
 
-  void _telaEmConstrucao(String nome) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Tela "$nome" ainda não implementada.')),
+  void _abrirPerfil() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PerfilScreen(totalQuestoes: _questoes.length),
+      ),
     );
   }
 
@@ -323,7 +325,7 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
           ),
           const Spacer(),
           GestureDetector(
-            onTap: () => _telaEmConstrucao('Perfil'),
+            onTap: _abrirPerfil,
             child: const CircleAvatar(
               radius: 17,
               backgroundColor: _Cores.teal,
@@ -599,7 +601,7 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
             ),
             _buildItemMenu(Icons.menu_book_rounded, 'Questões', true, () {}),
             _buildItemMenu(Icons.person_outline, 'Perfil', false,
-                () => _telaEmConstrucao('Perfil')),
+                _abrirPerfil),
           ],
         ),
       ),

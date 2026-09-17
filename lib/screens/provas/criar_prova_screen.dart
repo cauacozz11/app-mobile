@@ -55,7 +55,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
   void initState() {
     super.initState();
     _bancoQuestoes = _carregarQuestoesBanco();
-    // Inicia com algumas questões selecionadas
     if (_bancoQuestoes.length >= 3) {
       _questoesSelecionadasIds.add(_bancoQuestoes[0].questao.id);
       _questoesSelecionadasIds.add(_bancoQuestoes[2].questao.id);
@@ -139,15 +138,12 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar: "Criar prova"
             _buildHeader(),
 
-            // Conteúdo com scroll
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
                 children: [
-                  // Seção: Informações da prova
                   const Text(
                     'Informações da prova',
                     style: TextStyle(
@@ -158,7 +154,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Campo: Título da prova
                   const Text(
                     'Título da prova',
                     style: TextStyle(
@@ -193,7 +188,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Disciplina (seletor)
                   const Text(
                     'Disciplina',
                     style: TextStyle(
@@ -243,7 +237,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Selecionar questões + Contador
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -280,7 +273,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Busca no banco de questões + botão de filtro
                   Row(
                     children: [
                       Expanded(
@@ -356,7 +348,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Lista de questões do banco
                   if (filtradas.isEmpty)
                     Container(
                       padding: const EdgeInsets.all(28),
@@ -379,7 +370,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
               ),
             ),
 
-            // Barra de conclusão fixa no rodapé
             _buildBarraConclusao(totalSelecionadas),
           ],
         ),
@@ -454,7 +444,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Checkbox estilizado
             Container(
               width: 22,
               height: 22,
@@ -473,7 +462,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
             ),
             const SizedBox(width: 12),
 
-            // Enunciado e tags de apoio
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,7 +501,6 @@ class _CriarProvaScreenState extends State<CriarProvaScreen> {
               ),
             ),
 
-            // Seta para ver detalhe da questão antes de selecionar
             IconButton(
               icon: const Icon(
                 Icons.chevron_right_rounded,

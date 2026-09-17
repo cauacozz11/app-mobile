@@ -4,12 +4,12 @@ import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/models/resultado.dart';
+import 'package:app_mobile/screens/perfil/perfil_screen.dart';
 import 'package:app_mobile/screens/questoes/banco_questoes.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
 
 import 'criar_prova_modal.dart';
 
-// Paleta visual oficial do ProvaLeve (conforme prototipo)
 class _Cores {
   static const Color background = Color(0xFFF8F5F0);
   static const Color teal = Color(0xFF22555A);
@@ -167,17 +167,14 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Topo da tela: Logo ProvaLeve + Saudação e Avatar do Professor
             _buildTopo(),
             const SizedBox(height: 12),
 
-            // Lista rolável de conteúdo
             Expanded(
               child: ListView(
                 controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
                 children: [
-                  // Título da tela
                   const Text(
                     'Minhas provas',
                     style: TextStyle(
@@ -189,15 +186,12 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Barra de busca
                   _buildBarraBusca(),
                   const SizedBox(height: 14),
 
-                  // Filtros por situação
                   _buildFiltrosSituacao(),
                   const SizedBox(height: 16),
 
-                  // Lista de cartões ou estado vazio
                   if (filtradas.isEmpty)
                     _buildEstadoVazio()
                   else
@@ -212,7 +206,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         ),
       ),
 
-      // Botão flutuante "Nova prova"
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _abrirCriarProva,
@@ -226,12 +219,10 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         ),
       ),
 
-      // Menu de navegação inferior fixo
       bottomNavigationBar: _buildMenuInferior(),
     );
   }
 
-  // Header superior
   Widget _buildTopo() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
@@ -288,7 +279,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
-  // Barra de busca
   Widget _buildBarraBusca() {
     return Container(
       height: 46,
@@ -337,7 +327,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
-  // Abas de filtro
   Widget _buildFiltrosSituacao() {
     const opcoes = [
       StatusProva.todas,
@@ -345,17 +334,20 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       StatusProva.corrigida,
     ];
 
-    return Row(
-      children: [
-        for (final opcao in opcoes) ...[
-          _buildPillFiltro(
-            rotulo: opcao.rotulo,
-            selecionado: _filtroStatus == opcao,
-            onTap: () => setState(() => _filtroStatus = opcao),
-          ),
-          const SizedBox(width: 8),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final opcao in opcoes) ...[
+            _buildPillFiltro(
+              rotulo: opcao.rotulo,
+              selecionado: _filtroStatus == opcao,
+              onTap: () => setState(() => _filtroStatus = opcao),
+            ),
+            const SizedBox(width: 8),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -400,7 +392,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
-  // Cartão individual de prova
   Widget _buildCartaoProva(ProvaItemVisual item) {
     final disciplinaInfo =
         _estiloDisciplinas[item.prova.disciplina] ??
@@ -438,11 +429,9 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Linha superior: Ícone da disciplina + Título/Disciplina + Badge de Status
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Ícone da disciplina em caixa arredondada
                 Container(
                   width: 44,
                   height: 44,
@@ -470,7 +459,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                 ),
                 const SizedBox(width: 12),
 
-                // Título e Subtítulo (Disciplina)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -496,14 +484,12 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                   ),
                 ),
 
-                // Etiqueta de status
                 _buildEtiquetaStatus(item.status),
               ],
             ),
 
             const SizedBox(height: 14),
 
-            // Linha de informações: Data + Quantidade de questões + Chevron
             Row(
               children: [
                 const Icon(
@@ -544,7 +530,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
               ],
             ),
 
-            // Atalho de resultado (exibido apenas quando status for Corrigida)
             if (ehCorrigida) ...[
               const SizedBox(height: 12),
               const Divider(height: 1, color: Color(0xFFEBE8E0)),
@@ -590,7 +575,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
-  // Etiqueta visual de status (Rascunho, Pronta, Corrigida)
   Widget _buildEtiquetaStatus(StatusProva status) {
     Color corFundo;
     Color corTexto;
@@ -643,7 +627,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
-  // Estado vazio quando não houver provas para a busca ou filtro
   Widget _buildEstadoVazio() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 20),
@@ -690,7 +673,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
-  // Menu inferior fixo padronizado com Banco de Questões
   Widget _buildMenuInferior() {
     return Container(
       decoration: BoxDecoration(
@@ -762,8 +744,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       ),
     );
   }
-
-  // Ações e fluxos de navegação
 
   Future<void> _editarRascunho(ProvaItemVisual item) async {
     final conclusao = await CriarProvaModal.exibir(
@@ -852,7 +832,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       id: 'res-${item.prova.id}',
       provaId: item.prova.id,
       respostasMarcadas: List.generate(qtd, (i) {
-        // Mock de correção com ~85% de aproveitamento (ex: erra a cada 6 questões)
         if (i % 6 == 0 && i != 0) {
           return (item.prova.questoes[i].indiceAlternativaCorreta + 1) % 4;
         }
@@ -975,64 +954,25 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
   }
 
   void _abrirPerfil() {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _Cores.cardWhite,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Text('👩‍🏫', style: TextStyle(fontSize: 24)),
-            SizedBox(width: 8),
-            Text(
-              'Perfil do Professor',
-              style: TextStyle(
-                color: _Cores.teal,
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-              ),
-            ),
-          ],
+    final corrigidas = _provas
+        .where((item) => item.status == StatusProva.corrigida)
+        .length;
+    final questoes = _provas.fold<int>(
+      0,
+      (total, item) => total + item.totalQuestoes,
+    );
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PerfilScreen(
+          totalProvas: _provas.length,
+          totalCorrigidas: corrigidas,
+          totalQuestoes: questoes,
         ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Prof. Ana Carolina',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: _Cores.subtitleColor,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'professor@escola.com',
-              style: TextStyle(fontSize: 13.5, color: _Cores.subtitleColor),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Instituição: Colégio Estadual\nDisciplinas: Matemática, Ciências',
-              style: TextStyle(
-                fontSize: 12.5,
-                color: _Cores.subtitleColor,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fechar', style: TextStyle(color: _Cores.teal)),
-          ),
-        ],
       ),
     );
   }
 
-  // Dados mock iniciais
   static List<ProvaItemVisual> _gerarProvasIniciais() {
     Questao questaoBase(String id, String enunciado) {
       return Questao(
@@ -1049,7 +989,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     }
 
     return [
-      // 1. Matemática — 8º ano (Corrigida)
       ProvaItemVisual(
         prova: Prova(
           id: 'prova-1',
@@ -1066,7 +1005,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         totalQuestoes: 20,
       ),
 
-      // 2. Ciências — Ecossistemas (Rascunho)
       ProvaItemVisual(
         prova: Prova(
           id: 'prova-2',
@@ -1083,7 +1021,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         totalQuestoes: 15,
       ),
 
-      // 3. História do Brasil (Pronta)
       ProvaItemVisual(
         prova: Prova(
           id: 'prova-3',
@@ -1100,7 +1037,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         totalQuestoes: 12,
       ),
 
-      // 4. Geografia — Climas e Relevo (Corrigida)
       ProvaItemVisual(
         prova: Prova(
           id: 'prova-4',
@@ -1117,7 +1053,6 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         totalQuestoes: 10,
       ),
 
-      // 5. Português — Concordância Verbal (Rascunho)
       ProvaItemVisual(
         prova: Prova(
           id: 'prova-5',

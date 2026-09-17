@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
-  // Paleta extraída da referência
   static const Color background = Color(0xFFF8F5F0);
   static const Color blobColor = Color(0xFFF2EEE4);
   static const Color teal = Color(0xFF22555A);
@@ -14,143 +15,174 @@ class SplashScreen extends StatelessWidget {
   static const Color subtitleColor = Color(0xFF3A484D);
 
   @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  Timer? _timer;
+  bool _navegando = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(const Duration(milliseconds: 2500), _irParaLogin);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _irParaLogin() {
+    if (!mounted || _navegando) return;
+    _navegando = true;
+    _timer?.cancel();
+    Navigator.of(context).pushReplacementNamed('/login');
+  }
+
+  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: background,
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: Stack(
-          children: [
-            // Blob decorativo superior esquerdo
-            Positioned(
-              top: 0,
-              left: 0,
-              child: CustomPaint(
-                size: Size(size.width * 0.34, size.height * 0.19),
-                painter: _BlobPainter(color: blobColor),
-              ),
-            ),
-
-            // Blob decorativo inferior direito (espelhado)
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Transform.rotate(
-                angle: 3.14159,
+      backgroundColor: SplashScreen.background,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _irParaLogin,
+        child: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
                 child: CustomPaint(
                   size: Size(size.width * 0.34, size.height * 0.19),
-                  painter: _BlobPainter(color: blobColor),
+                  painter: BlobPainter(color: SplashScreen.blobColor),
                 ),
               ),
-            ),
 
-            // Conteúdo
-            SafeArea(
-              child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Bloco de cima: logo + nome do app, centralizado no espaço restante
-                    Expanded(
-                      child: Center(
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Transform.rotate(
+                  angle: 3.14159,
+                  child: CustomPaint(
+                    size: Size(size.width * 0.34, size.height * 0.19),
+                    painter: BlobPainter(color: SplashScreen.blobColor),
+                  ),
+                ),
+              ),
+
+              SafeArea(
+                child: SizedBox(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const LogoCard(),
+                              const SizedBox(height: 16),
+
+                              RichText(
+                                text: const TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'Prova',
+                                      style: TextStyle(
+                                        color: SplashScreen.teal,
+                                        fontSize: 38,
+                                        fontWeight: FontWeight.w800,
+                                        height: 1,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: 'Leve',
+                                      style: TextStyle(
+                                        color: SplashScreen.sage,
+                                        fontSize: 38,
+                                        fontWeight: FontWeight.w800,
+                                        height: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 56),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const _LogoCard(),
-                            const SizedBox(height: 16),
-
-                            // Nome do aplicativo
-                            RichText(
-                              text: const TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: 'Prova',
-                                    style: TextStyle(
-                                      color: teal,
-                                      fontSize: 38,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: 'Leve',
-                                    style: TextStyle(
-                                      color: sage,
-                                      fontSize: 38,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1,
-                                    ),
-                                  ),
-                                ],
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 40),
+                              child: Text(
+                                'Provas mais simples. Tempo para ensinar.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: SplashScreen.subtitleColor,
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
+                            const SizedBox(height: 18),
+                            const _PageDots(),
                           ],
                         ),
                       ),
-                    ),
-
-                    // Bloco de baixo: subtítulo + indicador de páginas, fixo perto do rodapé
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 56),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 40),
-                            child: Text(
-                              'Provas mais simples. Tempo para ensinar.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: subtitleColor,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          const _PageDots(),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Cartão com o ícone de checklist + checkmark + brilhos, tudo desenhado
-// em um único CustomPainter para reproduzir a ilustração com fidelidade.
-class _LogoCard extends StatelessWidget {
-  const _LogoCard();
+class LogoCard extends StatelessWidget {
+  const LogoCard({super.key, this.escala = 1});
+
+  final double escala;
 
   @override
   Widget build(BuildContext context) {
     const double w = 132;
     const double h = 153;
     return SizedBox(
-      width: w * 1.20,
-      height: h * 1.16,
+      width: w * 1.20 * escala,
+      height: h * 1.16 * escala,
       child: CustomPaint(
-        painter: _LogoPainter(),
-        size: const Size(w * 1.20, h * 1.16),
+        painter: _LogoPainter(escala: escala),
+        size: Size(w * 1.20 * escala, h * 1.16 * escala),
       ),
     );
   }
 }
 
 class _LogoPainter extends CustomPainter {
+  const _LogoPainter({this.escala = 1});
+
+  final double escala;
+
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.scale(escala);
+
     const cardW = 132.0;
     const cardH = 153.0;
     final cardRect = Rect.fromLTWH(0, 0, cardW, cardH);
@@ -161,8 +193,7 @@ class _LogoPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     canvas.drawRRect(rrect.shift(const Offset(2, 6)), shadowPaint);
 
-    canvas.drawRRect(rrect, Paint()
-      ..color = SplashScreen.cardWhite);
+    canvas.drawRRect(rrect, Paint()..color = SplashScreen.cardWhite);
 
     Offset rel(double fx, double fy) => Offset(fx * cardW, fy * cardH);
 
@@ -177,10 +208,8 @@ class _LogoPainter extends CustomPainter {
       ..color = SplashScreen.sage
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4;
-    final circleFillPaint = Paint()
-      ..color = SplashScreen.teal;
-    final linePaint = Paint()
-      ..color = SplashScreen.grayLine;
+    final circleFillPaint = Paint()..color = SplashScreen.teal;
+    final linePaint = Paint()..color = SplashScreen.grayLine;
 
     for (var i = 0; i < rowFy.length; i++) {
       final center = rel(circleFx, rowFy[i]);
@@ -198,8 +227,6 @@ class _LogoPainter extends CustomPainter {
       canvas.drawRRect(lineRect, linePaint);
     }
 
-    // Checkmark: agora mais fino e mais diagonal, terminando bem
-    // rente ao canto superior direito (sem "subir" demais).
     final checkPaint = Paint()
       ..color = SplashScreen.orange
       ..style = PaintingStyle.stroke
@@ -217,8 +244,6 @@ class _LogoPainter extends CustomPainter {
       ..lineTo(pEnd.dx, pEnd.dy);
     canvas.drawPath(checkPath, checkPaint);
 
-    // Brilhos: fixos perto do canto superior direito, independentes
-    // do tamanho do check (não "seguem" mais a ponta dele).
     final sparklePaint = Paint()
       ..color = SplashScreen.sage
       ..strokeWidth = 5
@@ -234,12 +259,13 @@ class _LogoPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _LogoPainter oldDelegate) =>
+      oldDelegate.escala != escala;
 }
-// Forma orgânica ("blob") do canto, feita com curvas suaves
-class _BlobPainter extends CustomPainter {
+
+class BlobPainter extends CustomPainter {
   final Color color;
-  const _BlobPainter({required this.color});
+  const BlobPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -262,7 +288,6 @@ class _BlobPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Indicador de páginas (bolinhas) — a primeira ativa, maior e mais escura
 class _PageDots extends StatelessWidget {
   const _PageDots();
 
