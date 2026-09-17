@@ -1,8 +1,5 @@
 import 'package:app_mobile/models/questao.dart';
 
-// Metadado de exibição usado apenas nas telas de Banco de questões / Nova
-// questão (mock em memória — não faz parte da entidade Questao do domínio,
-// que segue a especificação em especificacao_n1.md).
 class QuestaoCadastrada {
   final Questao questao;
   final String disciplina;

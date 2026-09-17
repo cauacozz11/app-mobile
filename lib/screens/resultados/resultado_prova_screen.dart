@@ -6,7 +6,6 @@ import 'package:app_mobile/models/resultado.dart';
 
 enum _Filtro { todas, acertos, erros }
 
-// Cores da tela de resultado
 class _Cores {
   static const fundo = Color(0xFFFCFDFC);
   static const titulo = Color(0xFF064D65);

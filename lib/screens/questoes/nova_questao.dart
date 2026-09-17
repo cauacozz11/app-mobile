@@ -4,7 +4,6 @@ import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/questao.dart';
 import 'questao_cadastrada.dart';
 
-// Paleta compartilhada com as demais telas (ver splash.dart)
 class _Cores {
   static const Color background = Color(0xFFF8F5F0);
   static const Color teal = Color(0xFF22555A);
