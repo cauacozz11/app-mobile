@@ -7,8 +7,11 @@ Provas mais simples. Tempo para ensinar.
 ## 1. Resumo do Projeto
 
 O ProvaLeve é um aplicativo desenvolvido para auxiliar professores no processo de criação, organização e correção de provas.
+
 O projeto surgiu a partir da necessidade de reduzir o tempo gasto pelos professores com a correção de avaliações. Durante períodos de provas, um professor pode ter um grande volume de avaliações para corrigir, tornando esse processo demorado.
+
 A proposta do ProvaLeve é centralizar o processo de avaliação em uma aplicação, permitindo o gerenciamento de questões e provas, além da apresentação dos resultados após a correção.
+
 O sistema também busca facilitar a análise do desempenho dos alunos, apresentando informações como acertos, erros, resposta marcada e alternativa correta.
 
 ---
@@ -35,7 +38,7 @@ A correção automatizada foi identificada pelo cliente como a funcionalidade ma
 
 ### 3.1 Funcionalidades dentro do escopo
 
-O projeto contempla inicialmente:
+As funcionalidades dentro do escopo do projeto são:
 
 * Abertura do aplicativo;
 * Login do professor;
@@ -50,7 +53,7 @@ O projeto contempla inicialmente:
 * Visualização das respostas marcadas;
 * Consulta detalhada das questões corrigidas.
 
-Essas funcionalidades correspondem ao fluxo apresentado nos wireframes do aplicativo.
+Essas funcionalidades foram definidas nos wireframes do aplicativo e implementadas no app Flutter.
 
 ### 3.2 Funcionalidades previstas para evolução
 
@@ -76,7 +79,7 @@ Não fazem parte do escopo inicial:
 
 ---
 
-# 4. Requisitos Funcionais — RF
+## 4. Requisitos Funcionais — RF
 
 | Código   | Requisito | Situação |
 | -------- | --------- | -------- |
@@ -103,7 +106,7 @@ Não fazem parte do escopo inicial:
 | **RF21** | O sistema deve permitir que o professor visualize a correção detalhada da prova do aluno. | Atendido (dados mock) |
 | **RF22** | O sistema deve permitir compartilhar ou exportar o resultado. | Não atendido |
 
-Os requisitos foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente.
+Os requisitos foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente. A coluna Situação mostra o que já está implementado no aplicativo.
 
 Legenda da situação:
 
@@ -115,7 +118,7 @@ Observação: a correção automatizada (RF16) é feita pelo professor. Falta im
 
 ---
 
-# 5. Requisitos Não Funcionais — RNF
+## 5. Requisitos Não Funcionais — RNF
 
 | Código    | Requisito                                                                                    |
 | --------- | -------------------------------------------------------------------------------------------- |
@@ -134,11 +137,11 @@ A preferência do cliente é por uma interface minimalista, lógica, amigável e
 
 ---
 
-# 6. Telas Principais
+## 6. Telas Principais
 
-O ProvaLeve possui 7 telas principais definidas nos wireframes.
+O ProvaLeve possui 7 telas principais, definidas nos wireframes e já implementadas em Flutter.
 
-## 6.1 Abertura
+### 6.1 Abertura
 
 É a primeira tela apresentada ao iniciar o aplicativo.
 
@@ -151,7 +154,7 @@ Função:
 
 ---
 
-## 6.2 Login
+### 6.2 Login
 
 Tela responsável pela autenticação do professor.
 
@@ -165,7 +168,7 @@ Elementos principais:
 
 ---
 
-## 6.3 Minhas Provas
+### 6.3 Minhas Provas
 
 Tela principal apresentada após o login.
 
@@ -181,7 +184,7 @@ Elementos principais:
 
 ---
 
-## 6.4 Criar Prova
+### 6.4 Criar Prova
 
 Tela utilizada para montar uma nova prova utilizando questões cadastradas.
 
@@ -197,7 +200,7 @@ Elementos principais:
 
 ---
 
-## 6.5 Banco de Questões
+### 6.5 Banco de Questões
 
 Tela responsável por centralizar as questões cadastradas.
 
@@ -215,7 +218,7 @@ Elementos principais:
 
 ---
 
-## 6.6 Nova Questão
+### 6.6 Nova Questão
 
 Tela destinada ao cadastro de uma nova questão de múltipla escolha.
 
@@ -232,7 +235,7 @@ Elementos principais:
 
 ---
 
-## 6.7 Resultado da Prova
+### 6.7 Resultado da Prova
 
 Tela voltada ao professor, responsável pela apresentação do resultado de um aluno após a correção da prova. O aluno não acessa o aplicativo: é o professor quem visualiza a nota, o desempenho e as respostas do aluno.
 
@@ -250,7 +253,7 @@ Elementos principais:
 
 ---
 
-# 7. Fluxo Principal do Sistema
+## 7. Fluxo Principal do Sistema
 
 
 ABERTURA
@@ -278,7 +281,7 @@ QUESTÕES              │
 
 ---
 
-# 8. Público-Alvo
+## 8. Público-Alvo
 
 O ProvaLeve é destinado principalmente a professores que trabalham com avaliações e possuem um grande volume de provas para corrigir.
 
@@ -286,17 +289,17 @@ O sistema busca reduzir o tempo utilizado na correção e facilitar a análise d
 
 ---
 
-# 9. Interface e Experiência de Uso
+## 9. Interface e Experiência de Uso
 
-A interface do ProvaLeve foi planejada para ser simples, amigável e objetiva.
+A interface do ProvaLeve foi projetada para ser simples, amigável e objetiva.
 
 A proposta considera uma navegação lógica e uma quantidade reduzida de elementos na tela, seguindo a preferência apresentada pelo cliente por uma experiência mais minimalista.
 
-Os wireframes foram desenvolvidos para validar o fluxo de utilização do aplicativo antes da implementação das funcionalidades.
+Os wireframes validaram o fluxo de utilização do aplicativo, e as telas implementadas em Flutter seguem esse fluxo.
 
 ---
 
-# 10. Status do Projeto
+## 10. Status do Projeto
 
 Status: Em desenvolvimento 🚧
 
@@ -312,7 +315,7 @@ Vídeo de apresentação: https://www.youtube.com/watch?v=Q-urOUDrMoM
 
 ---
 
-# 11. Como Rodar o Projeto
+## 11. Como Rodar o Projeto
 
 ### Pré-requisitos
 
