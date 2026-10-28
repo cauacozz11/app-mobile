@@ -22,4 +22,18 @@ class QuestaoCadastrada {
       dificuldade: dificuldade ?? this.dificuldade,
     );
   }
+
+  Map<String, dynamic> toMap() => {
+    ...questao.toMap(),
+    'disciplina': disciplina,
+    'dificuldade': dificuldade,
+  };
+
+  factory QuestaoCadastrada.fromMap(Map<String, dynamic> map) {
+    return QuestaoCadastrada(
+      questao: Questao.fromMap(map),
+      disciplina: (map['disciplina'] ?? '') as String,
+      dificuldade: (map['dificuldade'] ?? 'Fácil') as String,
+    );
+  }
 }
