@@ -5,6 +5,7 @@ import 'package:app_mobile/models/resultado.dart';
 import 'package:app_mobile/screens/correcao/correcao_prova_screen.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
 import 'package:app_mobile/screens/questoes/banco_questoes.dart';
+import 'package:app_mobile/screens/resultados/lista_resultados_screen.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
 import 'package:app_mobile/data/provas_repository.dart';
 
@@ -958,23 +959,9 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
 
 
   void _abrirResultado(ProvaItemVisual item) {
-    final qtd = item.prova.questoes.length;
-    final resultado = Resultado(
-      id: 'res-${item.prova.id}',
-      provaId: item.prova.id,
-      respostasMarcadas: List.generate(qtd, (i) {
-        if (i % 6 == 0 && i != 0) {
-          return (item.prova.questoes[i].indiceAlternativaCorreta + 1) % 4;
-        }
-        return item.prova.questoes[i].indiceAlternativaCorreta;
-      }),
-      nota: 8.5,
-    );
-
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) =>
-            ResultadoProvaScreen(prova: item.prova, resultado: resultado),
+        builder: (context) => ListaResultadosScreen(prova: item.prova),
       ),
     );
   }
