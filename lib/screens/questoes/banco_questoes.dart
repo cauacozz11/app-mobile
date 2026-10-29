@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:app_mobile/data/questoes_repository.dart';
-import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
+import 'package:app_mobile/widgets/estado_tela.dart';
 
 import 'nova_questao.dart';
 import 'questao_cadastrada.dart';
@@ -48,53 +48,7 @@ class BancoQuestoesScreen extends StatefulWidget {
 }
 
 class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
-  final List<QuestaoCadastrada> _questoes = [
-    QuestaoCadastrada(
-      disciplina: 'Matemática',
-      dificuldade: 'Fácil',
-      questao: Questao(
-        id: '1',
-        enunciado: 'Qual é o resultado de 3² + 4²?',
-        indiceAlternativaCorreta: 2,
-        alternativas: [
-          Alternativa(texto: '9', ordem: 0),
-          Alternativa(texto: '12', ordem: 1),
-          Alternativa(texto: '25', ordem: 2),
-          Alternativa(texto: '49', ordem: 3),
-        ],
-      ),
-    ),
-    QuestaoCadastrada(
-      disciplina: 'Ciências',
-      dificuldade: 'Média',
-      questao: Questao(
-        id: '2',
-        enunciado: 'Qual processo as plantas usam para produzir alimento?',
-        indiceAlternativaCorreta: 1,
-        alternativas: [
-          Alternativa(texto: 'Respiração', ordem: 0),
-          Alternativa(texto: 'Fotossíntese', ordem: 1),
-          Alternativa(texto: 'Fermentação', ordem: 2),
-          Alternativa(texto: 'Osmose', ordem: 3),
-        ],
-      ),
-    ),
-    QuestaoCadastrada(
-      disciplina: 'História',
-      dificuldade: 'Fácil',
-      questao: Questao(
-        id: '3',
-        enunciado: 'Em que ano ocorreu a Independência do Brasil?',
-        indiceAlternativaCorreta: 3,
-        alternativas: [
-          Alternativa(texto: '1808', ordem: 0),
-          Alternativa(texto: '1815', ordem: 1),
-          Alternativa(texto: '1889', ordem: 2),
-          Alternativa(texto: '1822', ordem: 3),
-        ],
-      ),
-    ),
-  ];
+  final List<QuestaoCadastrada> _questoes = [];
 
   static const List<String> _opcoesDificuldade = ['Todas', 'Fácil', 'Média', 'Difícil'];
 
@@ -102,7 +56,39 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
   String _filtro = 'Todas';
   String _filtroDificuldade = 'Todas';
   bool _salvando = false;
+  bool _carregando = true;
+  String? _erroCarregamento;
   final _buscaController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarQuestoes();
+  }
+
+  Future<void> _carregarQuestoes() async {
+    setState(() {
+      _carregando = true;
+      _erroCarregamento = null;
+    });
+    try {
+      final questoes = await QuestoesRepository.instance.listar();
+      if (!mounted) return;
+      setState(() {
+        _questoes
+          ..clear()
+          ..addAll(questoes);
+        if (!_abas.contains(_filtro)) _filtro = 'Todas';
+        _carregando = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erroCarregamento = mensagemErro(e);
+        _carregando = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -307,17 +293,31 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
                   const SizedBox(height: 14),
                   _buildAbas(),
                   const SizedBox(height: 12),
-                  Text(
-                    filtradas.length == 1
-                        ? '1 questão cadastrada'
-                        : '${filtradas.length} questões cadastradas',
-                    style: const TextStyle(color: _Cores.subtitleColor, fontSize: 13),
-                  ),
-                  const SizedBox(height: 10),
-                  if (filtradas.isEmpty) _buildVazio(),
-                  for (var i = 0; i < filtradas.length; i++) ...[
-                    _buildCartao(i + 1, filtradas[i]),
-                    const SizedBox(height: 12),
+                  if (_carregando)
+                    const EstadoTela.carregando()
+                  else if (_erroCarregamento != null)
+                    EstadoTela.erro(
+                      mensagem: _erroCarregamento!,
+                      onTentarNovamente: _carregarQuestoes,
+                    )
+                  else if (_questoes.isEmpty)
+                    const EstadoTela.vazio(
+                      titulo: 'Nenhuma questão cadastrada',
+                      mensagem: 'Toque em "Nova questão" para cadastrar a primeira.',
+                    )
+                  else ...[
+                    Text(
+                      filtradas.length == 1
+                          ? '1 questão cadastrada'
+                          : '${filtradas.length} questões cadastradas',
+                      style: const TextStyle(color: _Cores.subtitleColor, fontSize: 13),
+                    ),
+                    const SizedBox(height: 10),
+                    if (filtradas.isEmpty) _buildVazio(),
+                    for (var i = 0; i < filtradas.length; i++) ...[
+                      _buildCartao(i + 1, filtradas[i]),
+                      const SizedBox(height: 12),
+                    ],
                   ],
                 ],
               ),
