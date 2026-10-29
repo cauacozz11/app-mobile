@@ -48,6 +48,7 @@ erDiagram
         string id PK
         string professorId FK
         string provaId FK
+        string nomeAluno
         array respostasMarcadas "uma resposta por questão"
         number nota
         timestamp criadoEm
@@ -98,7 +99,7 @@ Provas montadas pelo professor (classe `Prova`).
 | professorId | string | Professor dono da prova |
 | titulo | string | Título da prova |
 | disciplina | string | Disciplina da prova |
-| status | string | `rascunho`, `pronta` ou `corrigida`. Campo previsto: a classe `Prova` ainda não tem esse campo e a situação fica só na tela |
+| status | string | `rascunho`, `pronta` ou `corrigida`. A classe `Prova` guarda esse campo; o padrão é `rascunho` |
 | dataCriacao | timestamp | Data de criação mostrada na listagem |
 | questoes | array de map | Cópia das questões escolhidas: `id`, `enunciado`, `alternativas` e `indiceAlternativaCorreta` |
 | criadoEm | timestamp | Data em que o documento foi criado com `criar` |
@@ -106,13 +107,14 @@ Provas montadas pelo professor (classe `Prova`).
 
 ### resultados
 
-Resultado da correção da prova de um aluno (classe `Resultado`).
+Resultado da correção da prova de um aluno (classe `Resultado`). É gravada pela tela de correção (um documento por aluno corrigido) e lida pela lista de resultados da prova, com `listarPorProva`.
 
 | Campo | Tipo | Descrição |
 | --- | --- | --- |
 | id | string | Id do resultado |
 | professorId | string | Professor que corrigiu |
 | provaId | string | Prova corrigida |
+| nomeAluno | string | Nome do aluno, informado pelo professor na tela de correção. Resultados antigos sem esse campo são lidos como texto vazio |
 | respostasMarcadas | array de int | Alternativa marcada em cada questão, na ordem da prova (-1 = em branco) |
 | nota | number | Nota do aluno |
 | criadoEm | timestamp | Data em que o documento foi criado com `criar` |
