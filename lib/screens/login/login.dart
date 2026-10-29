@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:app_mobile/utils/validators.dart';
 import 'package:app_mobile/models/sessao.dart';
 import 'package:app_mobile/models/usuario.dart';
 import 'package:app_mobile/screens/splash.dart' show LogoCard, BlobPainter;
@@ -38,20 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailCtrl.dispose();
     _senhaCtrl.dispose();
     super.dispose();
-  }
-
-  String? _validaEmail(String? valor) {
-    final texto = (valor ?? '').trim();
-    if (texto.isEmpty) return 'Informe o e-mail';
-    if (!texto.contains('@') || !texto.contains('.')) return 'E-mail inválido';
-    return null;
-  }
-
-  String? _validaSenha(String? valor) {
-    final texto = valor ?? '';
-    if (texto.isEmpty) return 'Informe a senha';
-    if (texto.length < 6) return 'A senha tem no mínimo 6 caracteres';
-    return null;
   }
 
   void _entrar() {
@@ -250,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           autocorrect: false,
-                          validator: _validaEmail,
+                          validator: Validators.email,
                           style: const TextStyle(
                             color: _Cores.subtitleColor,
                             fontSize: 15,
@@ -269,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           obscureText: _senhaOculta,
                           textInputAction: TextInputAction.done,
                           onFieldSubmitted: (_) => _entrar(),
-                          validator: _validaSenha,
+                          validator: Validators.senha,
                           style: const TextStyle(
                             color: _Cores.subtitleColor,
                             fontSize: 15,

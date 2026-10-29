@@ -132,8 +132,19 @@ class _NovaQuestaoScreenState extends State<NovaQuestaoScreen> {
         setState(() => _erro = 'Escreva o enunciado da questão.');
         return null;
       }
+      if (enunciado.length < 10) {
+        setState(() => _erro = 'O enunciado deve ter pelo menos 10 caracteres.');
+        return null;
+      }
       if (_alternativas.any((a) => a.controller.text.trim().isEmpty)) {
         setState(() => _erro = 'Preencha o texto de todas as alternativas.');
+        return null;
+      }
+      final textos = _alternativas
+          .map((a) => a.controller.text.trim().toLowerCase())
+          .toList();
+      if (textos.toSet().length != textos.length) {
+        setState(() => _erro = 'As alternativas não podem ser repetidas.');
         return null;
       }
       if (_indiceCorreta < 0 || _indiceCorreta >= _alternativas.length) {
@@ -165,7 +176,9 @@ class _NovaQuestaoScreenState extends State<NovaQuestaoScreen> {
   }
 
   void _salvarRascunho() {
-    final item = _montarItem(exigirCompleta: false);
+    // Ao editar, o rascunho também exige dados completos, para não
+    // sobrescrever uma questão válida do Firestore com dados incompletos.
+    final item = _montarItem(exigirCompleta: _editando);
     if (item == null) return;
     Navigator.of(context).pop(item);
   }
