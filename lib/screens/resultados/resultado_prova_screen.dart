@@ -86,12 +86,15 @@ class _ResultadoProvaScreenState extends State<ResultadoProvaScreen> {
         .toStringAsFixed(1)
         .replaceAll('.', ',');
 
+    final aluno = widget.resultado.nomeAluno;
+    final linhaAluno = aluno.isEmpty ? '' : 'Aluno: $aluno\n';
+
     final texto = '''
 Resultado da prova
 
 Prova: ${widget.prova.titulo}
 Disciplina: ${widget.prova.disciplina}
-
+$linhaAluno
 Nota: $nota de 10
 Acertos: $acertos
 Erros: $erros
@@ -224,6 +227,17 @@ Compartilhado pelo aplicativo.
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
           children: [
+            if (widget.resultado.nomeAluno.isNotEmpty) ...[
+              Text(
+                'Aluno: ${widget.resultado.nomeAluno}',
+                style: const TextStyle(
+                  color: _Cores.texto,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
             _CartaoResumo(
               prova: widget.prova,
               nota: widget.resultado.nota,
