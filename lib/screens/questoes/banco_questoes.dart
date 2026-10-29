@@ -162,9 +162,16 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
     final resultado = await Navigator.of(context).push<QuestaoCadastrada>(
       MaterialPageRoute(builder: (_) => const NovaQuestaoScreen()),
     );
-    if (resultado != null) {
-      setState(() => _questoes.add(resultado));
+    if (resultado == null) return;
+    try {
+      await QuestoesRepository.instance.criar(resultado);
+    } catch (_) {
+      _avisar('Erro ao salvar a questão. Tente novamente.');
+      return;
     }
+    if (!mounted) return;
+    setState(() => _questoes.add(resultado));
+    _avisar(resultado.rascunho ? 'Rascunho salvo.' : 'Questão salva.');
   }
 
   Future<void> _editarQuestao(QuestaoCadastrada item) async {
@@ -194,19 +201,23 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
   }
 
-  void _duplicarQuestao(QuestaoCadastrada item) {
+  Future<void> _duplicarQuestao(QuestaoCadastrada item) async {
     final novaQuestao = Questao(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       enunciado: item.questao.enunciado,
       alternativas: item.questao.alternativas,
       indiceAlternativaCorreta: item.questao.indiceAlternativaCorreta,
     );
-    setState(() {
-      _questoes.add(item.copyWith(questao: novaQuestao));
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Questão duplicada.')),
-    );
+    final copia = item.copyWith(questao: novaQuestao);
+    try {
+      await QuestoesRepository.instance.criar(copia);
+    } catch (_) {
+      _avisar('Erro ao salvar a questão. Tente novamente.');
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _questoes.add(copia));
+    _avisar('Questão duplicada.');
   }
 
   Future<void> _excluirQuestao(QuestaoCadastrada item) async {
@@ -525,6 +536,8 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
                       children: [
                         _buildEtiqueta(item.disciplina, etDisciplina),
                         _buildEtiqueta(item.dificuldade, etDificuldade),
+                        if (item.rascunho)
+                          _buildEtiqueta('Rascunho', _etiquetaPadrao),
                       ],
                     ),
                   ],

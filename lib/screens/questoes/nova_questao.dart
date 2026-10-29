@@ -180,13 +180,13 @@ class _NovaQuestaoScreenState extends State<NovaQuestaoScreen> {
     // sobrescrever uma questão válida do Firestore com dados incompletos.
     final item = _montarItem(exigirCompleta: _editando);
     if (item == null) return;
-    Navigator.of(context).pop(item);
+    Navigator.of(context).pop(item.copyWith(rascunho: true));
   }
 
   void _salvarQuestao() {
     final item = _montarItem(exigirCompleta: true);
     if (item == null) return;
-    Navigator.of(context).pop(item);
+    Navigator.of(context).pop(item.copyWith(rascunho: false));
   }
 
   @override
