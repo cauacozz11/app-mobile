@@ -349,8 +349,7 @@ flutter run
 
 ### Observações
 
-* As telas atuais usam dados mock, então não é necessário configurar o banco para executar esta versão;
-* Quando a integração com o Firebase for mesclada, será necessário o arquivo `google-services.json` em `android/app/`.
+* Para compilar o app, é necessário o arquivo `google-services.json` do projeto Firebase em `android/app/`. Ele não fica no repositório; peça ao responsável pelo Firebase do grupo.
 * Para entrar no aplicativo, use um dos usuários de teste: `professor@escola.com` / `provaleve` ou `caua@provaleve.com` / `123456`.
 
 ---
