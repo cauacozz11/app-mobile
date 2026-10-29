@@ -9,25 +9,11 @@ import 'screens/questoes/banco_questoes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-//teste
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-//teste
-Future<void> testarConexao() async {
-  await FirebaseFirestore.instance
-      .collection('teste_conexao')
-      .add({'ok': true, 'criadoEm': FieldValue.serverTimestamp()});
-}
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Sem await: sem internet a gravação só termina quando a conexão volta e o app ficaria parado na abertura.
-  testarConexao()
-      .then((_) => debugPrint('FIREBASE OK: documento gravado'))
-      .catchError((Object e) => debugPrint('FIREBASE ERRO: $e'));
   runApp(const MyApp());
 }
 class MyApp extends StatelessWidget {
