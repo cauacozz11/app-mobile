@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/questao.dart';
@@ -63,10 +64,46 @@ class _ResultadoProvaScreenState extends State<ResultadoProvaScreen> {
     return 'Desempenho abaixo da média';
   }
 
-  void _compartilhar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Compartilhamento ainda não disponível nesta versão.'),
+  Future<void> _compartilhar() async {
+    final questoes = widget.prova.questoes;
+
+    final acertos = List.generate(
+      questoes.length,
+          (i) => i,
+    ).where(_acertou).length;
+
+    final erros = questoes.length - acertos;
+
+    final percentual = questoes.isEmpty
+        ? 0.0
+        : (acertos / questoes.length) * 100;
+
+    final nota = widget.resultado.nota
+        .toStringAsFixed(1)
+        .replaceAll('.', ',');
+
+    final aproveitamento = percentual
+        .toStringAsFixed(1)
+        .replaceAll('.', ',');
+
+    final texto = '''
+Resultado da prova
+
+Prova: ${widget.prova.titulo}
+Disciplina: ${widget.prova.disciplina}
+
+Nota: $nota de 10
+Acertos: $acertos
+Erros: $erros
+Aproveitamento: $aproveitamento%
+
+Compartilhado pelo aplicativo.
+''';
+
+    await SharePlus.instance.share(
+      ShareParams(
+        text: texto,
+        subject: 'Resultado da prova - ${widget.prova.titulo}',
       ),
     );
   }
