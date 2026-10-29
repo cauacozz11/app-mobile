@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/resultado.dart';
+import 'package:app_mobile/screens/correcao/correcao_prova_screen.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
 import 'package:app_mobile/screens/questoes/banco_questoes.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
@@ -978,6 +979,42 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
+  Future<void> _abrirCorrecao(ProvaItemVisual item) async {
+    final resultado = await Navigator.of(context).push<Resultado>(
+      MaterialPageRoute(
+        builder: (context) => CorrecaoProvaScreen(prova: item.prova),
+      ),
+    );
+    if (!mounted || resultado == null) return;
+
+    final prova = Prova(
+      id: item.prova.id,
+      titulo: item.prova.titulo,
+      disciplina: item.prova.disciplina,
+      questoes: item.prova.questoes,
+      dataCriacao: item.prova.dataCriacao,
+      status: 'corrigida',
+    );
+    final indice = _provas.indexWhere((p) => p.prova.id == prova.id);
+    if (indice != -1) {
+      setState(() {
+        _provas[indice] = ProvaItemVisual(
+          prova: prova,
+          status: StatusProva.corrigida,
+          dataFormatada: item.dataFormatada,
+          totalQuestoes: item.totalQuestoes,
+        );
+      });
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) =>
+            ResultadoProvaScreen(prova: prova, resultado: resultado),
+      ),
+    );
+  }
+
   void _abrirDetalhesProva(ProvaItemVisual item) {
     showModalBottomSheet<void>(
       context: context,
@@ -1055,6 +1092,33 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                     _abrirResultado(item);
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (item.status != StatusProva.rascunho) ...[
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _Cores.teal,
+                    side: const BorderSide(color: _Cores.teal),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: Text(
+                    item.status == StatusProva.corrigida
+                        ? 'Corrigir prova de outro aluno'
+                        : 'Corrigir prova',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _abrirCorrecao(item);
                   },
                 ),
               ),
