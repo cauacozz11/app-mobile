@@ -12,7 +12,7 @@ Provas mais simples. Tempo para ensinar.
 
 ![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-yellow?style=for-the-badge)
 ![Entrega](https://img.shields.io/badge/Entrega-N2-blue?style=for-the-badge)
-![Licença](https://img.shields.io/badge/Licen%C3%A7a-Uso%20acad%C3%AAmico-lightgrey?style=for-the-badge)
+![Licença](https://img.shields.io/badge/Licen%C3%A7a-MIT-green?style=for-the-badge)
 
 </div>
 
@@ -147,7 +147,7 @@ Não fazem parte do escopo inicial:
 | **RF05** | O sistema deve permitir filtrar provas por situação. | Atendido (Firestore) |
 | **RF06** | O sistema deve permitir criar uma nova prova. | Atendido (Firestore) |
 | **RF07** | O sistema deve permitir selecionar questões para compor uma prova. | Atendido (dados locais) |
-| **RF08** | O sistema deve permitir pesquisar questões no banco de questões. | Atendido (dados locais) |
+| **RF08** | O sistema deve permitir pesquisar questões no banco de questões. | Atendido (Firestore) |
 | **RF09** | O sistema deve permitir cadastrar novas questões. | Atendido (Firestore) |
 | **RF10** | O sistema deve permitir cadastrar alternativas para uma questão. | Atendido (Firestore) |
 | **RF11** | O sistema deve permitir definir a alternativa correta de uma questão. | Atendido (Firestore) |
@@ -167,7 +167,7 @@ Os requisitos foram definidos a partir das funcionalidades descritas nos wirefra
 
 Legenda da situação:
 
-* **Atendido (Firestore):** a funcionalidade está implementada e grava ou lê os dados no Firestore. As provas (RF03 a RF06) usam o `ProvasRepository` e as questões (RF09 a RF15) usam o `QuestoesRepository`;
+* **Atendido (Firestore):** a funcionalidade está implementada e grava ou lê os dados no Firestore. As provas (RF03 a RF06) usam o `ProvasRepository` e as questões (RF08 a RF15) usam o `QuestoesRepository`;
 * **Atendido (dados locais):** a tela e o fluxo existem no aplicativo, mas ainda usam dados de exemplo ou dados gerados no próprio aplicativo, sem leitura do banco;
 * **Atendido (compartilhamento com share_plus):** o resultado é compartilhado pelo menu de compartilhamento do celular;
 * **Atendido (usuários de teste locais):** o login funciona com os usuários de teste do aplicativo, sem autenticação pelo Firebase;
@@ -176,7 +176,7 @@ Legenda da situação:
 
 Observação: a correção automatizada (RF16) é feita pelo professor. Falta implementar a tela em que ele lê o QR Code e o gabarito da prova do aluno, que é a funcionalidade principal do cliente. A tela de resultado (RF17 a RF21) é voltada ao professor, e não ao aluno.
 
-Observação sobre os dados locais: as questões gravadas, editadas ou excluídas no banco de questões vão para o Firestore (RF09 a RF15), mas a lista exibida nessa tela ainda parte de três questões de exemplo, e a tela de criar prova (RF07) escolhe as questões de uma lista de exemplo (RF08). A tela de resultado (RF17 a RF21) usa a prova gravada no Firestore, porém as respostas marcadas e a nota são geradas no próprio aplicativo, porque a correção automatizada (RF16) ainda não existe. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
+Observação sobre o Firestore e os dados locais: o banco de questões lista, cria, edita, duplica e exclui as questões no Firestore (RF08 a RF15), e a lista é carregada do banco sempre que a tela é aberta. Já a tela de criar prova (RF07) ainda escolhe as questões de uma lista de exemplo que está no código. A tela de resultado (RF17 a RF21) usa a prova gravada no Firestore, porém as respostas marcadas e a nota são geradas no próprio aplicativo, porque a correção automatizada (RF16) ainda não existe. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
 
 ---
 
@@ -398,7 +398,7 @@ Entrega atual: N2.
 O aplicativo já possui código Flutter funcional para as telas de abertura, login, perfil, minhas provas, criar prova, banco de questões, nova questão e resultado da prova. Nesta etapa as principais telas já leem e gravam no Firestore:
 
 * **Minhas Provas:** lista, pesquisa e filtra as provas gravadas no Firestore, cria novas provas e atualiza rascunhos e provas postadas;
-* **Banco de Questões e Nova Questão:** gravam, editam, duplicam e excluem questões (inclusive rascunhos) no Firestore;
+* **Banco de Questões e Nova Questão:** a tela lista as questões do Firestore ao abrir e permite criar, editar, duplicar e excluir questões (inclusive rascunhos) direto no Firestore;
 * **Camada de acesso a dados:** `ProvasRepository`, `QuestoesRepository` e `ResultadosRepository`, em `lib/data/`, gravam o `professorId` e filtram as consultas por ele (RNF08);
 * **Tratamento de erros:** mensagens de erro, estados de carregando, lista vazia e erro, e avisos nas telas (RNF09);
 * **Resultado da prova:** o resultado pode ser compartilhado pelo menu de compartilhamento do celular (RF22).
@@ -406,9 +406,8 @@ O aplicativo já possui código Flutter funcional para as telas de abertura, log
 O que ainda é local ou de exemplo:
 
 * O login usa usuários de teste que ficam no próprio aplicativo (`lib/screens/login/mock_usuario.dart`). O Firebase Authentication não foi implementado e a coleção `usuarios` ainda não é lida nem gravada;
-* O banco de questões começa com três questões de exemplo e não lista as questões que já estão no Firestore. As questões gravadas aparecem na lista durante o uso do aplicativo, mas não são lidas de volta ao abrir a tela de novo;
 * A tela de criar prova escolhe as questões de uma lista de exemplo que está no código, e não do banco de questões do Firestore;
-* A tela de resultado usa a prova gravada no Firestore, mas as respostas marcadas e a nota são geradas no próprio aplicativo, e a coleção `resultados` ainda não é lida nem gravada pelas telas;
+* Na tela de resultado, as respostas marcadas e a nota são geradas no próprio aplicativo, porque a correção automatizada ainda não existe. A prova exibida vem do Firestore, mas a coleção `resultados` ainda não é lida nem gravada pelas telas;
 * O filtro por professor (RNF08) é feito pelo aplicativo. As regras de segurança do Firestore só poderão garantir isso quando houver autenticação.
 
 Ainda não foram implementados:
@@ -539,7 +538,7 @@ O ProvaLeve guarda os dados em quatro coleções na raiz do Firestore. Em todas 
 | Coleção | O que guarda | Situação no app |
 | ------- | ------------ | --------------- |
 | `usuarios` | Dados do professor: nome, e-mail, instituição e disciplinas (a senha não é gravada). | Ainda não é lida nem gravada, pois o login usa usuários de teste. |
-| `questoes` | Banco de questões do professor: disciplina, dificuldade, rascunho, enunciado, alternativas e alternativa correta. | Gravada, editada e excluída pelo banco de questões. |
+| `questoes` | Banco de questões do professor: disciplina, dificuldade, rascunho, enunciado, alternativas e alternativa correta. | Lida, gravada, editada e excluída pelo banco de questões. |
 | `provas` | Provas montadas pelo professor: título, disciplina, situação, data e uma cópia das questões escolhidas. | Lida e gravada pela tela Minhas Provas. |
 | `resultados` | Resultado da correção de um aluno: prova corrigida, respostas marcadas e nota. | Repositório pronto; ainda não é usada pelas telas. |
 
