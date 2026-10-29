@@ -1,27 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:app_mobile/data/firestore_repository.dart';
 import 'package:app_mobile/screens/questoes/questao_cadastrada.dart';
 
 /// Acesso à coleção `questoes` do Firestore.
 /// O id do documento é o mesmo `Questao.id`.
-///
-/// Tarefa 10 (edição e exclusão). Os métodos de listar (tarefa 8) e
-/// criar (tarefa 9) são adicionados por quem faz essas tarefas.
-class QuestoesRepository {
-  QuestoesRepository._();
+class QuestoesRepository extends FirestoreRepository<QuestaoCadastrada> {
+  QuestoesRepository._() : super('questoes');
   static final QuestoesRepository instance = QuestoesRepository._();
 
-  CollectionReference<Map<String, dynamic>> get _colecao =>
-      FirebaseFirestore.instance.collection('questoes');
+  @override
+  String idDe(QuestaoCadastrada item) => item.questao.id;
 
-  /// Grava a edição. Usa merge para funcionar também com questões que
-  /// ainda não existem no banco (ex.: as do mock), sem apagar outros campos.
-  Future<void> atualizar(QuestaoCadastrada item) {
-    return _colecao.doc(item.questao.id).set({
-      ...item.toMap(),
-      'atualizadoEm': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-  }
+  @override
+  Map<String, dynamic> toMap(QuestaoCadastrada item) => item.toMap();
 
-  Future<void> excluir(String id) => _colecao.doc(id).delete();
+  @override
+  QuestaoCadastrada fromMap(Map<String, dynamic> map) =>
+      QuestaoCadastrada.fromMap(map);
 }
