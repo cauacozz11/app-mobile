@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:app_mobile/data/questoes_repository.dart';
 import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
@@ -172,12 +173,25 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
         builder: (_) => NovaQuestaoScreen(itemParaEditar: item),
       ),
     );
-    if (resultado != null) {
-      setState(() {
-        final indice = _questoes.indexWhere((q) => q.questao.id == item.questao.id);
-        if (indice != -1) _questoes[indice] = resultado;
-      });
+    if (resultado == null) return;
+    try {
+      // Tarefa 10: a edição é gravada no Firestore.
+      await QuestoesRepository.instance.atualizar(resultado);
+    } catch (_) {
+      _avisar('Erro ao atualizar a questão. Tente novamente.');
+      return;
     }
+    if (!mounted) return;
+    setState(() {
+      final indice = _questoes.indexWhere((q) => q.questao.id == item.questao.id);
+      if (indice != -1) _questoes[indice] = resultado;
+    });
+    _avisar('Questão atualizada.');
+  }
+
+  void _avisar(String mensagem) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensagem)));
   }
 
   void _duplicarQuestao(QuestaoCadastrada item) {
@@ -214,9 +228,17 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
         ],
       ),
     );
-    if (confirmar == true) {
-      setState(() => _questoes.removeWhere((q) => q.questao.id == item.questao.id));
+    if (confirmar != true) return;
+    try {
+      // Tarefa 10: a exclusão é feita no Firestore.
+      await QuestoesRepository.instance.excluir(item.questao.id);
+    } catch (_) {
+      _avisar('Erro ao excluir a questão. Tente novamente.');
+      return;
     }
+    if (!mounted) return;
+    setState(() => _questoes.removeWhere((q) => q.questao.id == item.questao.id));
+    _avisar('Questão excluída.');
   }
 
   void _abrirPerfil() {
@@ -452,7 +474,7 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
     final etDisciplina = _coresDisciplina[item.disciplina] ?? _etiquetaPadrao;
     final etDificuldade = _coresDificuldade[item.dificuldade] ?? _etiquetaPadrao;
     final correta = (questao.indiceAlternativaCorreta >= 0 &&
-            questao.indiceAlternativaCorreta < questao.alternativas.length)
+        questao.indiceAlternativaCorreta < questao.alternativas.length)
         ? _letra(questao.indiceAlternativaCorreta)
         : '—';
 
@@ -591,7 +613,7 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
               Icons.description_outlined,
               'Provas',
               false,
-              () {
+                  () {
                 if (Navigator.of(context).canPop()) {
                   Navigator.of(context).pop();
                 } else {
