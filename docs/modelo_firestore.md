@@ -24,6 +24,7 @@ erDiagram
         string professorId FK
         string disciplina
         string dificuldade
+        boolean rascunho
         string enunciado
         array alternativas "texto e ordem"
         int indiceAlternativaCorreta
@@ -80,6 +81,7 @@ Banco de questões do professor (classe `QuestaoCadastrada`).
 | professorId | string | Professor dono da questão |
 | disciplina | string | Matemática, Ciências, História, Geografia ou Português |
 | dificuldade | string | Fácil, Média ou Difícil |
+| rascunho | boolean | `true` quando foi salva como rascunho (RF15) |
 | enunciado | string | Texto da questão |
 | alternativas | array de map | Cada item tem `texto` (string) e `ordem` (int) |
 | indiceAlternativaCorreta | int | Posição da alternativa correta (0 = A, 1 = B...) |
