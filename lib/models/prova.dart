@@ -1,3 +1,4 @@
+
 import 'package:app_mobile/models/questao.dart';
 
 class Prova {
@@ -6,6 +7,7 @@ class Prova {
   final String disciplina;
   final List<Questao> questoes;
   final DateTime dataCriacao;
+  final String status;
 
   Prova({
     required this.id,
@@ -13,6 +15,7 @@ class Prova {
     required this.disciplina,
     required this.questoes,
     required this.dataCriacao,
+    this.status = 'rascunho',
   });
 
   Map<String, dynamic> toMap() => {
@@ -21,6 +24,7 @@ class Prova {
     'disciplina': disciplina,
     'questoes': questoes.map((q) => q.toMap()).toList(),
     'dataCriacao': dataCriacao,
+    'status': status,
   };
 
   factory Prova.fromMap(Map<String, dynamic> map) => Prova(
@@ -31,10 +35,10 @@ class Prova {
         .map((q) => Questao.fromMap(Map<String, dynamic>.from(q as Map)))
         .toList(),
     dataCriacao: _lerData(map['dataCriacao']),
+    status: map['status'] as String? ?? 'rascunho',
   );
 }
 
-// O Firestore devolve datas como Timestamp (que tem toDate()). Aceita DateTime também.
 DateTime _lerData(dynamic valor) {
   if (valor is DateTime) return valor;
   return valor.toDate() as DateTime;

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/prova.dart';
-import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/models/resultado.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
 import 'package:app_mobile/screens/questoes/banco_questoes.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
+import 'package:app_mobile/data/provas_repository.dart';
 
 import 'criar_prova_modal.dart';
 
@@ -125,12 +124,62 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
   StatusProva _filtroStatus = StatusProva.todas;
 
   late List<ProvaItemVisual> _provas;
+  bool _carregando = true;
+  String? _erroCarregamento;
 
   @override
   void initState() {
     super.initState();
-    _provas = _gerarProvasIniciais();
+    _provas = [];
+    _carregarProvas();
   }
+
+
+  Future<void> _carregarProvas() async {
+    setState(() {
+      _carregando = true;
+      _erroCarregamento = null;
+    });
+
+    try {
+      final provas = await ProvasRepository.instance.listar();
+
+      final itens = provas.map((prova) {
+        final dia = prova.dataCriacao.day.toString().padLeft(2, '0');
+        const meses = [
+          'jan', 'fev', 'mar', 'abr', 'mai', 'jun',
+          'jul', 'ago', 'set', 'out', 'nov', 'dez',
+        ];
+        final mes = meses[prova.dataCriacao.month - 1];
+
+        final status = switch (prova.status) {
+          'pronta' => StatusProva.pronta,
+          'corrigida' => StatusProva.corrigida,
+          _ => StatusProva.rascunho,
+        };
+
+        return ProvaItemVisual(
+          prova: prova,
+          status: status,
+          dataFormatada: '$dia $mes',
+          totalQuestoes: prova.questoes.length,
+        );
+      }).toList();
+
+      if (!mounted) return;
+      setState(() {
+        _provas = itens;
+        _carregando = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erroCarregamento = 'Não foi possível carregar as provas.';
+        _carregando = false;
+      });
+    }
+  }
+
 
   @override
   void dispose() {
@@ -190,15 +239,49 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                   const SizedBox(height: 14),
 
                   _buildFiltrosSituacao(),
-                  const SizedBox(height: 16),
-
-                  if (filtradas.isEmpty)
-                    _buildEstadoVazio()
-                  else
-                    for (final item in filtradas) ...[
-                      _buildCartaoProva(item),
-                      const SizedBox(height: 14),
-                    ],
+                  if (_carregando)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: _Cores.teal,
+                        ),
+                      ),
+                    )
+                  else if (_erroCarregamento != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.cloud_off_rounded,
+                            size: 40,
+                            color: _Cores.grayLine,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _erroCarregamento!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: _Cores.subtitleColor,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: _carregarProvas,
+                            child: const Text('Tentar novamente'),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (filtradas.isEmpty)
+                      _buildEstadoVazio()
+                    else
+                      for (final item in filtradas) ...[
+                        _buildCartaoProva(item),
+                        const SizedBox(height: 14),
+                      ],
                 ],
               ),
             ),
@@ -331,6 +414,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     const opcoes = [
       StatusProva.todas,
       StatusProva.rascunho,
+      StatusProva.pronta,
       StatusProva.corrigida,
     ];
 
@@ -745,70 +829,108 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
+
   Future<void> _editarRascunho(ProvaItemVisual item) async {
     final conclusao = await CriarProvaModal.exibir(
       context,
       provaInicial: item.prova,
     );
     if (!mounted || conclusao == null) return;
-    final prova = conclusao.prova;
 
-    final indice = _provas.indexWhere((p) => p.prova.id == item.prova.id);
-    if (indice == -1) return;
-    setState(() {
-      _provas[indice] = ProvaItemVisual(
-        prova: prova,
-        status: conclusao.postada ? StatusProva.pronta : StatusProva.rascunho,
-        dataFormatada: item.dataFormatada,
-        totalQuestoes: prova.questoes.length,
-      );
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          conclusao.postada
-              ? 'Prova postada com sucesso!'
-              : 'Rascunho atualizado com sucesso!',
-        ),
-      ),
+    final provaOriginal = conclusao.prova;
+    final status = conclusao.postada ? 'pronta' : 'rascunho';
+
+    final prova = Prova(
+      id: provaOriginal.id,
+      titulo: provaOriginal.titulo,
+      disciplina: provaOriginal.disciplina,
+      questoes: provaOriginal.questoes,
+      dataCriacao: provaOriginal.dataCriacao,
+      status: status,
     );
+
+    final indice = _provas.indexWhere(
+          (p) => p.prova.id == item.prova.id,
+    );
+    if (indice == -1) return;
+
+    try {
+      await ProvasRepository.instance.atualizar(prova);
+      if (!mounted) return;
+
+      setState(() {
+        _provas[indice] = ProvaItemVisual(
+          prova: prova,
+          status: conclusao.postada
+              ? StatusProva.pronta
+              : StatusProva.rascunho,
+          dataFormatada: item.dataFormatada,
+          totalQuestoes: prova.questoes.length,
+        );
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            conclusao.postada
+                ? 'Prova postada com sucesso!'
+                : 'Rascunho atualizado com sucesso!',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível atualizar a prova no Firestore.'),
+        ),
+      );
+    }
   }
+
+
 
   Future<void> _abrirCriarProva() async {
     final conclusao = await CriarProvaModal.exibir(context);
     if (!mounted || conclusao == null) return;
-    final novaProva = conclusao.prova;
 
-    final dia = novaProva.dataCriacao.day.toString().padLeft(2, '0');
-    const meses = [
-      'jan',
-      'fev',
-      'mar',
-      'abr',
-      'mai',
-      'jun',
-      'jul',
-      'ago',
-      'set',
-      'out',
-      'nov',
-      'dez',
-    ];
-    final mes = meses[novaProva.dataCriacao.month - 1];
+    final provaOriginal = conclusao.prova;
+    final status = conclusao.postada ? 'pronta' : 'rascunho';
 
-    final novoItem = ProvaItemVisual(
-      prova: novaProva,
-      status: conclusao.postada ? StatusProva.pronta : StatusProva.rascunho,
-      dataFormatada: '$dia $mes',
-      totalQuestoes: novaProva.questoes.length,
+    final prova = Prova(
+      id: provaOriginal.id,
+      titulo: provaOriginal.titulo,
+      disciplina: provaOriginal.disciplina,
+      questoes: provaOriginal.questoes,
+      dataCriacao: provaOriginal.dataCriacao,
+      status: status,
     );
 
-    setState(() {
-      _provas.insert(0, novoItem);
-      _filtroStatus = StatusProva.todas;
-    });
+    try {
+      await ProvasRepository.instance.criar(prova);
+      if (!mounted) return;
 
-    if (mounted) {
+      final dia = prova.dataCriacao.day.toString().padLeft(2, '0');
+      const meses = [
+        'jan', 'fev', 'mar', 'abr', 'mai', 'jun',
+        'jul', 'ago', 'set', 'out', 'nov', 'dez',
+      ];
+      final mes = meses[prova.dataCriacao.month - 1];
+
+      final novoItem = ProvaItemVisual(
+        prova: prova,
+        status: conclusao.postada
+            ? StatusProva.pronta
+            : StatusProva.rascunho,
+        dataFormatada: '$dia $mes',
+        totalQuestoes: prova.questoes.length,
+      );
+
+      setState(() {
+        _provas.insert(0, novoItem);
+        _filtroStatus = StatusProva.todas;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: _Cores.teal,
@@ -823,8 +945,16 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
           ),
         ),
       );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível salvar a prova no Firestore.'),
+        ),
+      );
     }
   }
+
 
   void _abrirResultado(ProvaItemVisual item) {
     final qtd = item.prova.questoes.length;
@@ -971,103 +1101,5 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         ),
       ),
     );
-  }
-
-  static List<ProvaItemVisual> _gerarProvasIniciais() {
-    Questao questaoBase(String id, String enunciado) {
-      return Questao(
-        id: id,
-        enunciado: enunciado,
-        alternativas: [
-          Alternativa(texto: 'Opção A', ordem: 0),
-          Alternativa(texto: 'Opção B', ordem: 1),
-          Alternativa(texto: 'Opção C', ordem: 2),
-          Alternativa(texto: 'Opção D', ordem: 3),
-        ],
-        indiceAlternativaCorreta: 0,
-      );
-    }
-
-    return [
-      ProvaItemVisual(
-        prova: Prova(
-          id: 'prova-1',
-          titulo: 'Matemática — 8º ano',
-          disciplina: 'Matemática',
-          dataCriacao: DateTime(2026, 9, 8),
-          questoes: List.generate(
-            20,
-            (i) => questaoBase('m-$i', 'Questão ${i + 1}'),
-          ),
-        ),
-        status: StatusProva.corrigida,
-        dataFormatada: '08 set',
-        totalQuestoes: 20,
-      ),
-
-      ProvaItemVisual(
-        prova: Prova(
-          id: 'prova-2',
-          titulo: 'Ciências — Ecossistemas',
-          disciplina: 'Ciências',
-          dataCriacao: DateTime(2026, 9, 5),
-          questoes: List.generate(
-            15,
-            (i) => questaoBase('c-$i', 'Questão ${i + 1}'),
-          ),
-        ),
-        status: StatusProva.rascunho,
-        dataFormatada: '05 set',
-        totalQuestoes: 15,
-      ),
-
-      ProvaItemVisual(
-        prova: Prova(
-          id: 'prova-3',
-          titulo: 'História do Brasil',
-          disciplina: 'História',
-          dataCriacao: DateTime(2026, 8, 28),
-          questoes: List.generate(
-            12,
-            (i) => questaoBase('h-$i', 'Questão ${i + 1}'),
-          ),
-        ),
-        status: StatusProva.pronta,
-        dataFormatada: '28 ago',
-        totalQuestoes: 12,
-      ),
-
-      ProvaItemVisual(
-        prova: Prova(
-          id: 'prova-4',
-          titulo: 'Geografia — Climas e Relevo',
-          disciplina: 'Geografia',
-          dataCriacao: DateTime(2026, 8, 20),
-          questoes: List.generate(
-            10,
-            (i) => questaoBase('g-$i', 'Questão ${i + 1}'),
-          ),
-        ),
-        status: StatusProva.corrigida,
-        dataFormatada: '20 ago',
-        totalQuestoes: 10,
-      ),
-
-      ProvaItemVisual(
-        prova: Prova(
-          id: 'prova-5',
-          titulo: 'Português — Concordância',
-          disciplina: 'Português',
-          dataCriacao: DateTime(2026, 8, 14),
-          questoes: List.generate(
-            18,
-            (i) => questaoBase('p-$i', 'Questão ${i + 1}'),
-          ),
-        ),
-        status: StatusProva.rascunho,
-        dataFormatada: '14 ago',
-        totalQuestoes: 18,
-      ),
-    ];
   }
 }
