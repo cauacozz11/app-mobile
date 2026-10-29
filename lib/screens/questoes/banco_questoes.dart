@@ -4,6 +4,7 @@ import 'package:app_mobile/data/questoes_repository.dart';
 import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
+import 'package:app_mobile/utils/mensagem_erro.dart';
 
 import 'nova_questao.dart';
 import 'questao_cadastrada.dart';
@@ -100,6 +101,7 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
   String _busca = '';
   String _filtro = 'Todas';
   String _filtroDificuldade = 'Todas';
+  bool _salvando = false;
   final _buscaController = TextEditingController();
 
   @override
@@ -162,12 +164,15 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
     final resultado = await Navigator.of(context).push<QuestaoCadastrada>(
       MaterialPageRoute(builder: (_) => const NovaQuestaoScreen()),
     );
-    if (resultado == null) return;
+    if (resultado == null || !mounted) return;
+    setState(() => _salvando = true);
     try {
       await QuestoesRepository.instance.criar(resultado);
-    } catch (_) {
-      _avisar('Erro ao salvar a questão. Tente novamente.');
+    } catch (e) {
+      _avisar('Erro ao salvar a questão. ${mensagemErro(e)}');
       return;
+    } finally {
+      if (mounted) setState(() => _salvando = false);
     }
     if (!mounted) return;
     setState(() => _questoes.add(resultado));
@@ -180,13 +185,16 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
         builder: (_) => NovaQuestaoScreen(itemParaEditar: item),
       ),
     );
-    if (resultado == null) return;
+    if (resultado == null || !mounted) return;
+    setState(() => _salvando = true);
     try {
       // Tarefa 10: a edição é gravada no Firestore.
       await QuestoesRepository.instance.atualizar(resultado);
-    } catch (_) {
-      _avisar('Erro ao atualizar a questão. Tente novamente.');
+    } catch (e) {
+      _avisar('Erro ao atualizar a questão. ${mensagemErro(e)}');
       return;
+    } finally {
+      if (mounted) setState(() => _salvando = false);
     }
     if (!mounted) return;
     setState(() {
@@ -209,11 +217,14 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
       indiceAlternativaCorreta: item.questao.indiceAlternativaCorreta,
     );
     final copia = item.copyWith(questao: novaQuestao);
+    setState(() => _salvando = true);
     try {
       await QuestoesRepository.instance.criar(copia);
-    } catch (_) {
-      _avisar('Erro ao salvar a questão. Tente novamente.');
+    } catch (e) {
+      _avisar('Erro ao salvar a questão. ${mensagemErro(e)}');
       return;
+    } finally {
+      if (mounted) setState(() => _salvando = false);
     }
     if (!mounted) return;
     setState(() => _questoes.add(copia));
@@ -239,13 +250,16 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
         ],
       ),
     );
-    if (confirmar != true) return;
+    if (confirmar != true || !mounted) return;
+    setState(() => _salvando = true);
     try {
       // Tarefa 10: a exclusão é feita no Firestore.
       await QuestoesRepository.instance.excluir(item.questao.id);
-    } catch (_) {
-      _avisar('Erro ao excluir a questão. Tente novamente.');
+    } catch (e) {
+      _avisar('Erro ao excluir a questão. ${mensagemErro(e)}');
       return;
+    } finally {
+      if (mounted) setState(() => _salvando = false);
     }
     if (!mounted) return;
     setState(() => _questoes.removeWhere((q) => q.questao.id == item.questao.id));
@@ -270,6 +284,12 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
         child: Column(
           children: [
             _buildTopo(),
+            if (_salvando)
+              const LinearProgressIndicator(
+                minHeight: 2,
+                color: _Cores.teal,
+                backgroundColor: Colors.transparent,
+              ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 140),
@@ -544,6 +564,7 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
                 ),
               ),
               PopupMenuButton<String>(
+                enabled: !_salvando,
                 icon: const Icon(Icons.more_vert, color: _Cores.subtitleColor, size: 20),
                 color: _Cores.cardWhite,
                 onSelected: (opcao) {

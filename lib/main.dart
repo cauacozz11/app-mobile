@@ -24,12 +24,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  try {
-    await testarConexao();
-    debugPrint('FIREBASE OK: documento gravado');
-  } catch (e) {
-    debugPrint('FIREBASE ERRO: $e');
-  }
+  // Sem await: sem internet a gravação só termina quando a conexão volta e o app ficaria parado na abertura.
+  testarConexao()
+      .then((_) => debugPrint('FIREBASE OK: documento gravado'))
+      .catchError((Object e) => debugPrint('FIREBASE ERRO: $e'));
   runApp(const MyApp());
 }
 class MyApp extends StatelessWidget {
