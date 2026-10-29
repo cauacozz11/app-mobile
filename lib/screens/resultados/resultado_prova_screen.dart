@@ -57,10 +57,10 @@ class _ResultadoProvaScreenState extends State<ResultadoProvaScreen> {
       : 'Não respondida';
 
   String _mensagemDesempenho(double percentual) {
-    if (percentual >= 0.9) return 'Excelente!';
-    if (percentual >= 0.7) return 'Muito bom!';
-    if (percentual >= 0.5) return 'Dá pra melhorar';
-    return 'Vamos praticar mais';
+    if (percentual >= 0.9) return 'Desempenho excelente';
+    if (percentual >= 0.7) return 'Bom desempenho';
+    if (percentual >= 0.5) return 'Desempenho regular';
+    return 'Desempenho abaixo da média';
   }
 
   void _compartilhar() {
@@ -104,7 +104,7 @@ class _ResultadoProvaScreenState extends State<ResultadoProvaScreen> {
                   leading: Text(_letra(questao, i)),
                   title: Text(questao.alternativas[i].texto),
                   subtitle: i == _resposta(indice)
-                      ? const Text('Sua resposta')
+                      ? const Text('Resposta do aluno')
                       : null,
                   trailing: i == questao.indiceAlternativaCorreta
                       ? const Icon(Icons.check, color: _Cores.verde)
@@ -349,7 +349,7 @@ class _CartaoResumo extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Você acertou $acertos de ${prova.questoes.length} questões',
+                    'O aluno acertou $acertos de ${prova.questoes.length} questões',
                     style: const TextStyle(
                       color: _Cores.secundario,
                       fontSize: 13,
@@ -557,7 +557,7 @@ class _QuestaoResultadoCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'Sua resposta: $respostaMarcada',
+                      'Resposta do aluno: $respostaMarcada',
                       style: const TextStyle(
                         color: _Cores.secundario,
                         fontSize: 11,

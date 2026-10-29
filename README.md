@@ -7,8 +7,11 @@ Provas mais simples. Tempo para ensinar.
 ## 1. Resumo do Projeto
 
 O ProvaLeve é um aplicativo desenvolvido para auxiliar professores no processo de criação, organização e correção de provas.
+
 O projeto surgiu a partir da necessidade de reduzir o tempo gasto pelos professores com a correção de avaliações. Durante períodos de provas, um professor pode ter um grande volume de avaliações para corrigir, tornando esse processo demorado.
+
 A proposta do ProvaLeve é centralizar o processo de avaliação em uma aplicação, permitindo o gerenciamento de questões e provas, além da apresentação dos resultados após a correção.
+
 O sistema também busca facilitar a análise do desempenho dos alunos, apresentando informações como acertos, erros, resposta marcada e alternativa correta.
 
 ---
@@ -35,7 +38,7 @@ A correção automatizada foi identificada pelo cliente como a funcionalidade ma
 
 ### 3.1 Funcionalidades dentro do escopo
 
-O projeto contempla inicialmente:
+As funcionalidades dentro do escopo do projeto são:
 
 * Abertura do aplicativo;
 * Login do professor;
@@ -50,7 +53,7 @@ O projeto contempla inicialmente:
 * Visualização das respostas marcadas;
 * Consulta detalhada das questões corrigidas.
 
-Essas funcionalidades correspondem ao fluxo apresentado nos wireframes do aplicativo.
+Essas funcionalidades foram definidas nos wireframes do aplicativo e implementadas no app Flutter.
 
 ### 3.2 Funcionalidades previstas para evolução
 
@@ -76,38 +79,46 @@ Não fazem parte do escopo inicial:
 
 ---
 
-# 4. Requisitos Funcionais — RF
+## 4. Requisitos Funcionais — RF
 
-| Código   | Requisito                                                                        |
-| -------- | -------------------------------------------------------------------------------- |
-| **RF01** | O sistema deve permitir que o professor realize login utilizando e-mail e senha. |
-| **RF02** | O sistema deve permitir a recuperação de senha.                                  |
-| **RF03** | O sistema deve permitir visualizar as provas do professor.                       |
-| **RF04** | O sistema deve permitir pesquisar provas.                                        |
-| **RF05** | O sistema deve permitir filtrar provas por situação.                             |
-| **RF06** | O sistema deve permitir criar uma nova prova.                                    |
-| **RF07** | O sistema deve permitir selecionar questões para compor uma prova.               |
-| **RF08** | O sistema deve permitir pesquisar questões no banco de questões.                 |
-| **RF09** | O sistema deve permitir cadastrar novas questões.                                |
-| **RF10** | O sistema deve permitir cadastrar alternativas para uma questão.                 |
-| **RF11** | O sistema deve permitir definir a alternativa correta de uma questão.            |
-| **RF12** | O sistema deve permitir editar questões cadastradas.                             |
-| **RF13** | O sistema deve permitir duplicar questões.                                       |
-| **RF14** | O sistema deve permitir excluir questões.                                        |
-| **RF15** | O sistema deve permitir salvar uma questão como rascunho.                        |
-| **RF16** | O sistema deve realizar a correção automatizada das provas.                      |
-| **RF17** | O sistema deve apresentar a nota obtida pelo aluno.                              |
-| **RF18** | O sistema deve apresentar a quantidade de acertos e erros.                       |
-| **RF19** | O sistema deve apresentar a resposta marcada pelo aluno.                         |
-| **RF20** | O sistema deve apresentar a alternativa correta nas questões erradas.            |
-| **RF21** | O sistema deve permitir visualizar a correção detalhada da prova.                |
-| **RF22** | O sistema deve permitir compartilhar ou exportar o resultado.                    |
+| Código   | Requisito | Situação |
+| -------- | --------- | -------- |
+| **RF01** | O sistema deve permitir que o professor realize login utilizando e-mail e senha. | Atendido (dados mock) |
+| **RF02** | O sistema deve permitir a recuperação de senha. | Parcial |
+| **RF03** | O sistema deve permitir visualizar as provas do professor. | Atendido (dados mock) |
+| **RF04** | O sistema deve permitir pesquisar provas. | Atendido (dados mock) |
+| **RF05** | O sistema deve permitir filtrar provas por situação. | Atendido (dados mock) |
+| **RF06** | O sistema deve permitir criar uma nova prova. | Atendido (dados mock) |
+| **RF07** | O sistema deve permitir selecionar questões para compor uma prova. | Atendido (dados mock) |
+| **RF08** | O sistema deve permitir pesquisar questões no banco de questões. | Atendido (dados mock) |
+| **RF09** | O sistema deve permitir cadastrar novas questões. | Atendido (dados mock) |
+| **RF10** | O sistema deve permitir cadastrar alternativas para uma questão. | Atendido (dados mock) |
+| **RF11** | O sistema deve permitir definir a alternativa correta de uma questão. | Atendido (dados mock) |
+| **RF12** | O sistema deve permitir editar questões cadastradas. | Atendido (dados mock) |
+| **RF13** | O sistema deve permitir duplicar questões. | Atendido (dados mock) |
+| **RF14** | O sistema deve permitir excluir questões. | Atendido (dados mock) |
+| **RF15** | O sistema deve permitir salvar uma questão como rascunho. | Atendido (dados mock) |
+| **RF16** | O sistema deve realizar a correção automatizada das provas. | Não atendido |
+| **RF17** | O sistema deve permitir que o professor visualize a nota obtida pelo aluno. | Atendido (dados mock) |
+| **RF18** | O sistema deve permitir que o professor visualize a quantidade de acertos e erros do aluno. | Atendido (dados mock) |
+| **RF19** | O sistema deve permitir que o professor visualize a resposta marcada pelo aluno. | Atendido (dados mock) |
+| **RF20** | O sistema deve permitir que o professor visualize a alternativa correta nas questões em que o aluno errou. | Atendido (dados mock) |
+| **RF21** | O sistema deve permitir que o professor visualize a correção detalhada da prova do aluno. | Atendido (dados mock) |
+| **RF22** | O sistema deve permitir compartilhar ou exportar o resultado. | Não atendido |
 
-Os requisitos foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente.
+Os requisitos foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente. A coluna Situação mostra o que já está implementado no aplicativo.
+
+Legenda da situação:
+
+* **Atendido (dados mock):** a tela e o fluxo existem no aplicativo, mas ainda usam dados de exemplo, sem persistência no banco;
+* **Parcial:** existe apenas a interface, sem a lógica completa;
+* **Não atendido:** ainda não foi implementado.
+
+Observação: a correção automatizada (RF16) é feita pelo professor. Falta implementar a tela em que ele lê o QR Code e o gabarito da prova do aluno, que é a funcionalidade principal do cliente. A tela de resultado (RF17 a RF21) é voltada ao professor, e não ao aluno.
 
 ---
 
-# 5. Requisitos Não Funcionais — RNF
+## 5. Requisitos Não Funcionais — RNF
 
 | Código    | Requisito                                                                                    |
 | --------- | -------------------------------------------------------------------------------------------- |
@@ -126,11 +137,11 @@ A preferência do cliente é por uma interface minimalista, lógica, amigável e
 
 ---
 
-# 6. Telas Principais
+## 6. Telas Principais
 
-O ProvaLeve possui 7 telas principais definidas nos wireframes.
+O ProvaLeve possui 7 telas principais, definidas nos wireframes e já implementadas em Flutter.
 
-## 6.1 Abertura
+### 6.1 Abertura
 
 É a primeira tela apresentada ao iniciar o aplicativo.
 
@@ -143,7 +154,7 @@ Função:
 
 ---
 
-## 6.2 Login
+### 6.2 Login
 
 Tela responsável pela autenticação do professor.
 
@@ -157,7 +168,7 @@ Elementos principais:
 
 ---
 
-## 6.3 Minhas Provas
+### 6.3 Minhas Provas
 
 Tela principal apresentada após o login.
 
@@ -173,7 +184,7 @@ Elementos principais:
 
 ---
 
-## 6.4 Criar Prova
+### 6.4 Criar Prova
 
 Tela utilizada para montar uma nova prova utilizando questões cadastradas.
 
@@ -189,7 +200,7 @@ Elementos principais:
 
 ---
 
-## 6.5 Banco de Questões
+### 6.5 Banco de Questões
 
 Tela responsável por centralizar as questões cadastradas.
 
@@ -207,7 +218,7 @@ Elementos principais:
 
 ---
 
-## 6.6 Nova Questão
+### 6.6 Nova Questão
 
 Tela destinada ao cadastro de uma nova questão de múltipla escolha.
 
@@ -224,9 +235,9 @@ Elementos principais:
 
 ---
 
-## 6.7 Resultado da Prova
+### 6.7 Resultado da Prova
 
-Tela responsável pela apresentação do resultado após a correção.
+Tela voltada ao professor, responsável pela apresentação do resultado de um aluno após a correção da prova. O aluno não acessa o aplicativo: é o professor quem visualiza a nota, o desempenho e as respostas do aluno.
 
 Elementos principais:
 
@@ -242,7 +253,7 @@ Elementos principais:
 
 ---
 
-# 7. Fluxo Principal do Sistema
+## 7. Fluxo Principal do Sistema
 
 
 ABERTURA
@@ -270,7 +281,7 @@ QUESTÕES              │
 
 ---
 
-# 8. Público-Alvo
+## 8. Público-Alvo
 
 O ProvaLeve é destinado principalmente a professores que trabalham com avaliações e possuem um grande volume de provas para corrigir.
 
@@ -278,20 +289,67 @@ O sistema busca reduzir o tempo utilizado na correção e facilitar a análise d
 
 ---
 
-# 9. Interface e Experiência de Uso
+## 9. Interface e Experiência de Uso
 
-A interface do ProvaLeve foi planejada para ser simples, amigável e objetiva.
+A interface do ProvaLeve foi projetada para ser simples, amigável e objetiva.
 
 A proposta considera uma navegação lógica e uma quantidade reduzida de elementos na tela, seguindo a preferência apresentada pelo cliente por uma experiência mais minimalista.
 
-Os wireframes foram desenvolvidos para validar o fluxo de utilização do aplicativo antes da implementação das funcionalidades.
+Os wireframes validaram o fluxo de utilização do aplicativo, e as telas implementadas em Flutter seguem esse fluxo.
 
 ---
 
-# 10. Status do Projeto
+## 10. Status do Projeto
 
 Status: Em desenvolvimento 🚧
 
-Atualmente, o projeto possui o levantamento das necessidades do cliente, definição do escopo, requisitos funcionais e não funcionais e wireframes das principais telas.
-link do vídeo: https://www.youtube.com/watch?v=Q-urOUDrMoM
+O aplicativo já possui código Flutter funcional para as telas de abertura, login, perfil, minhas provas, criar prova, banco de questões, nova questão e resultado da prova. Nesta etapa essas telas trabalham com dados mock (de exemplo), e a integração com o Firestore está em andamento.
+
+Ainda não foram implementados:
+
+* Leitura do QR Code e do gabarito pelo professor para a correção automatizada (RF16);
+* Compartilhamento e exportação do resultado (RF22);
+* Fluxo completo de recuperação de senha (RF02, parcial).
+
+Vídeo de apresentação: https://www.youtube.com/watch?v=Q-urOUDrMoM
+
+---
+
+## 11. Como Rodar o Projeto
+
+### Pré-requisitos
+
+* [Flutter SDK](https://docs.flutter.dev/get-started/install) com Dart ^3.13.2;
+* Android Studio (ou VS Code) com o plugin do Flutter;
+* Um emulador Android ou um celular com depuração USB ativada;
+* Git.
+
+Para conferir o ambiente:
+
+```bash
+flutter doctor
+```
+
+### Passo a passo
+
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/cauacozz11/app-mobile.git
+cd app-mobile
+
+# 2. Baixar as dependências
+flutter pub get
+
+# 3. Listar os dispositivos disponíveis
+flutter devices
+
+# 4. Executar o aplicativo
+flutter run
+```
+
+### Observações
+
+* Para compilar o app, é necessário o arquivo `google-services.json` do projeto Firebase em `android/app/`. Ele não fica no repositório; peça ao responsável pelo Firebase do grupo.
+* Para entrar no aplicativo, use um dos usuários de teste: `professor@escola.com` / `provaleve` ou `caua@provaleve.com` / `123456`.
+
 ---
