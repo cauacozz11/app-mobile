@@ -2,6 +2,63 @@
 
 Provas mais simples. Tempo para ensinar.
 
+<div align="center">
+
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+
+![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-yellow?style=for-the-badge)
+![Entrega](https://img.shields.io/badge/Entrega-N2-blue?style=for-the-badge)
+![Licença](https://img.shields.io/badge/Licen%C3%A7a-Uso%20acad%C3%AAmico-lightgrey?style=for-the-badge)
+
+</div>
+
+---
+
+## Equipe
+
+| Integrante                        |
+| --------------------------------- |
+| Cauã Cozzarin                     |
+| Mateus Wroblewski                 |
+| Mário Augusto Bussarello Volpato  |
+| Felipe Tomio Maciel               |
+| Matheus Henrique Pompeu           |
+
+---
+
+## Sumário
+
+* [Equipe](#equipe)
+* [1. Resumo do Projeto](#1-resumo-do-projeto)
+* [2. Objetivo](#2-objetivo)
+* [3. Escopo Delimitado](#3-escopo-delimitado)
+  * [3.1 Funcionalidades dentro do escopo](#31-funcionalidades-dentro-do-escopo)
+  * [3.2 Funcionalidades previstas para evolução](#32-funcionalidades-previstas-para-evolução)
+  * [3.3 Fora do escopo inicial](#33-fora-do-escopo-inicial)
+* [4. Requisitos Funcionais — RF](#4-requisitos-funcionais--rf)
+* [5. Requisitos Não Funcionais — RNF](#5-requisitos-não-funcionais--rnf)
+* [6. Telas Principais](#6-telas-principais)
+  * [6.1 Abertura](#61-abertura)
+  * [6.2 Login](#62-login)
+  * [6.3 Minhas Provas](#63-minhas-provas)
+  * [6.4 Criar Prova](#64-criar-prova)
+  * [6.5 Banco de Questões](#65-banco-de-questões)
+  * [6.6 Nova Questão](#66-nova-questão)
+  * [6.7 Resultado da Prova](#67-resultado-da-prova)
+* [7. Fluxo Principal do Sistema](#7-fluxo-principal-do-sistema)
+* [8. Público-Alvo](#8-público-alvo)
+* [9. Interface e Experiência de Uso](#9-interface-e-experiência-de-uso)
+* [10. Status do Projeto](#10-status-do-projeto)
+* [11. Como Rodar o Projeto](#11-como-rodar-o-projeto)
+* [12. Stack Tecnológica](#12-stack-tecnológica)
+* [13. Estrutura de Pastas](#13-estrutura-de-pastas)
+* [14. Modelo de Dados](#14-modelo-de-dados)
+* [15. Backlog de Atividades da N2](#15-backlog-de-atividades-da-n2)
+
 ---
 
 ## 1. Resumo do Projeto
@@ -83,55 +140,60 @@ Não fazem parte do escopo inicial:
 
 | Código   | Requisito | Situação |
 | -------- | --------- | -------- |
-| **RF01** | O sistema deve permitir que o professor realize login utilizando e-mail e senha. | Atendido (dados mock) |
+| **RF01** | O sistema deve permitir que o professor realize login utilizando e-mail e senha. | Atendido (usuários de teste locais; autenticação pelo Firebase não implementada) |
 | **RF02** | O sistema deve permitir a recuperação de senha. | Parcial |
-| **RF03** | O sistema deve permitir visualizar as provas do professor. | Atendido (dados mock) |
-| **RF04** | O sistema deve permitir pesquisar provas. | Atendido (dados mock) |
-| **RF05** | O sistema deve permitir filtrar provas por situação. | Atendido (dados mock) |
-| **RF06** | O sistema deve permitir criar uma nova prova. | Atendido (dados mock) |
-| **RF07** | O sistema deve permitir selecionar questões para compor uma prova. | Atendido (dados mock) |
-| **RF08** | O sistema deve permitir pesquisar questões no banco de questões. | Atendido (dados mock) |
-| **RF09** | O sistema deve permitir cadastrar novas questões. | Atendido (dados mock) |
-| **RF10** | O sistema deve permitir cadastrar alternativas para uma questão. | Atendido (dados mock) |
-| **RF11** | O sistema deve permitir definir a alternativa correta de uma questão. | Atendido (dados mock) |
-| **RF12** | O sistema deve permitir editar questões cadastradas. | Atendido (dados mock) |
-| **RF13** | O sistema deve permitir duplicar questões. | Atendido (dados mock) |
-| **RF14** | O sistema deve permitir excluir questões. | Atendido (dados mock) |
-| **RF15** | O sistema deve permitir salvar uma questão como rascunho. | Atendido (dados mock) |
+| **RF03** | O sistema deve permitir visualizar as provas do professor. | Atendido (Firestore) |
+| **RF04** | O sistema deve permitir pesquisar provas. | Atendido (Firestore) |
+| **RF05** | O sistema deve permitir filtrar provas por situação. | Atendido (Firestore) |
+| **RF06** | O sistema deve permitir criar uma nova prova. | Atendido (Firestore) |
+| **RF07** | O sistema deve permitir selecionar questões para compor uma prova. | Atendido (dados locais) |
+| **RF08** | O sistema deve permitir pesquisar questões no banco de questões. | Atendido (dados locais) |
+| **RF09** | O sistema deve permitir cadastrar novas questões. | Atendido (Firestore) |
+| **RF10** | O sistema deve permitir cadastrar alternativas para uma questão. | Atendido (Firestore) |
+| **RF11** | O sistema deve permitir definir a alternativa correta de uma questão. | Atendido (Firestore) |
+| **RF12** | O sistema deve permitir editar questões cadastradas. | Atendido (Firestore) |
+| **RF13** | O sistema deve permitir duplicar questões. | Atendido (Firestore) |
+| **RF14** | O sistema deve permitir excluir questões. | Atendido (Firestore) |
+| **RF15** | O sistema deve permitir salvar uma questão como rascunho. | Atendido (Firestore) |
 | **RF16** | O sistema deve realizar a correção automatizada das provas. | Não atendido |
-| **RF17** | O sistema deve permitir que o professor visualize a nota obtida pelo aluno. | Atendido (dados mock) |
-| **RF18** | O sistema deve permitir que o professor visualize a quantidade de acertos e erros do aluno. | Atendido (dados mock) |
-| **RF19** | O sistema deve permitir que o professor visualize a resposta marcada pelo aluno. | Atendido (dados mock) |
-| **RF20** | O sistema deve permitir que o professor visualize a alternativa correta nas questões em que o aluno errou. | Atendido (dados mock) |
-| **RF21** | O sistema deve permitir que o professor visualize a correção detalhada da prova do aluno. | Atendido (dados mock) |
-| **RF22** | O sistema deve permitir compartilhar ou exportar o resultado. | Não atendido |
+| **RF17** | O sistema deve permitir que o professor visualize a nota obtida pelo aluno. | Atendido (dados locais) |
+| **RF18** | O sistema deve permitir que o professor visualize a quantidade de acertos e erros do aluno. | Atendido (dados locais) |
+| **RF19** | O sistema deve permitir que o professor visualize a resposta marcada pelo aluno. | Atendido (dados locais) |
+| **RF20** | O sistema deve permitir que o professor visualize a alternativa correta nas questões em que o aluno errou. | Atendido (dados locais) |
+| **RF21** | O sistema deve permitir que o professor visualize a correção detalhada da prova do aluno. | Atendido (dados locais) |
+| **RF22** | O sistema deve permitir compartilhar ou exportar o resultado. | Atendido (compartilhamento com share_plus) |
 
 Os requisitos foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente. A coluna Situação mostra o que já está implementado no aplicativo.
 
 Legenda da situação:
 
-* **Atendido (dados mock):** a tela e o fluxo existem no aplicativo, mas ainda usam dados de exemplo, sem persistência no banco;
+* **Atendido (Firestore):** a funcionalidade está implementada e grava ou lê os dados no Firestore. As provas (RF03 a RF06) usam o `ProvasRepository` e as questões (RF09 a RF15) usam o `QuestoesRepository`;
+* **Atendido (dados locais):** a tela e o fluxo existem no aplicativo, mas ainda usam dados de exemplo ou dados gerados no próprio aplicativo, sem leitura do banco;
+* **Atendido (compartilhamento com share_plus):** o resultado é compartilhado pelo menu de compartilhamento do celular;
+* **Atendido (usuários de teste locais):** o login funciona com os usuários de teste do aplicativo, sem autenticação pelo Firebase;
 * **Parcial:** existe apenas a interface, sem a lógica completa;
 * **Não atendido:** ainda não foi implementado.
 
 Observação: a correção automatizada (RF16) é feita pelo professor. Falta implementar a tela em que ele lê o QR Code e o gabarito da prova do aluno, que é a funcionalidade principal do cliente. A tela de resultado (RF17 a RF21) é voltada ao professor, e não ao aluno.
 
+Observação sobre os dados locais: as questões gravadas, editadas ou excluídas no banco de questões vão para o Firestore (RF09 a RF15), mas a lista exibida nessa tela ainda parte de três questões de exemplo, e a tela de criar prova (RF07) escolhe as questões de uma lista de exemplo (RF08). A tela de resultado (RF17 a RF21) usa a prova gravada no Firestore, porém as respostas marcadas e a nota são geradas no próprio aplicativo, porque a correção automatizada (RF16) ainda não existe. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
+
 ---
 
 ## 5. Requisitos Não Funcionais — RNF
 
-| Código    | Requisito                                                                                    |
-| --------- | -------------------------------------------------------------------------------------------- |
-| **RNF01** | A interface deve ser simples e fácil de utilizar.                                            |
-| **RNF02** | A navegação deve ser lógica e objetiva.                                                      |
-| **RNF03** | As informações devem ser apresentadas de forma clara e organizada.                           |
-| **RNF04** | O sistema deve proteger as informações de acesso do professor.                               |
-| **RNF05** | O resultado da correção deve ser apresentado de forma rápida.                                |
-| **RNF06** | A interface deve evitar excesso de elementos visuais.                                        |
-| **RNF07** | Os acertos e erros devem possuir identificação visual clara.                                 |
-| **RNF08** | Cada professor deve ter acesso somente às suas próprias provas e questões.                   |
-| **RNF09** | O sistema deve apresentar mensagens de erro quando ocorrerem problemas durante uma operação. |
-| **RNF10** | O aplicativo deve possuir uma interface adequada para dispositivos móveis.                   |
+| Código    | Requisito                                                                                    | Situação |
+| --------- | -------------------------------------------------------------------------------------------- | -------- |
+| **RNF01** | A interface deve ser simples e fácil de utilizar.                                            | Atendido (telas minimalistas, seguindo os wireframes) |
+| **RNF02** | A navegação deve ser lógica e objetiva.                                                      | Atendido (rotas nomeadas, seguindo o fluxo da seção 7) |
+| **RNF03** | As informações devem ser apresentadas de forma clara e organizada.                           | Atendido |
+| **RNF04** | O sistema deve proteger as informações de acesso do professor.                               | Parcial (a senha fica oculta na tela e não é gravada no Firestore; o login ainda usa usuários de teste locais, sem Firebase Authentication) |
+| **RNF05** | O resultado da correção deve ser apresentado de forma rápida.                                | Atendido (o resultado é calculado no próprio aplicativo, sem espera de rede) |
+| **RNF06** | A interface deve evitar excesso de elementos visuais.                                        | Atendido |
+| **RNF07** | Os acertos e erros devem possuir identificação visual clara.                                 | Atendido (cores e ícones de certo e errado na tela de resultado) |
+| **RNF08** | Cada professor deve ter acesso somente às suas próprias provas e questões.                   | Atendido (o `professorId` é gravado em cada documento e as consultas são filtradas por ele em `lib/data/firestore_repository.dart`; como o login ainda não usa o Firebase Authentication, as regras de segurança do Firestore só poderão garantir isso depois da autenticação) |
+| **RNF09** | O sistema deve apresentar mensagens de erro quando ocorrerem problemas durante uma operação. | Atendido (mensagens de erro em `lib/utils/mensagem_erro.dart`, estados de carregando, vazio e erro em `lib/widgets/estado_tela.dart` e avisos nas telas) |
+| **RNF10** | O aplicativo deve possuir uma interface adequada para dispositivos móveis.                   | Atendido (aplicativo Flutter com layout para celular) |
 
 A preferência do cliente é por uma interface minimalista, lógica, amigável e com poucos elementos na tela.
 
@@ -144,6 +206,10 @@ O ProvaLeve possui 7 telas principais, definidas nos wireframes e já implementa
 ### 6.1 Abertura
 
 É a primeira tela apresentada ao iniciar o aplicativo.
+
+![Tela de abertura](docs/telas/01-abertura.png)
+
+*Figura 6.1 — Tela de abertura com a identidade visual do ProvaLeve.*
 
 Função:
 
@@ -158,6 +224,10 @@ Função:
 
 Tela responsável pela autenticação do professor.
 
+![Tela de login](docs/telas/02-login.png)
+
+*Figura 6.2 — Tela de login com e-mail e senha.*
+
 Elementos principais:
 
 * Campo de e-mail;
@@ -171,6 +241,10 @@ Elementos principais:
 ### 6.3 Minhas Provas
 
 Tela principal apresentada após o login.
+
+![Tela Minhas Provas](docs/telas/03-minhas-provas.png)
+
+*Figura 6.3 — Lista de provas do professor, com busca e filtros por situação.*
 
 Elementos principais:
 
@@ -188,6 +262,10 @@ Elementos principais:
 
 Tela utilizada para montar uma nova prova utilizando questões cadastradas.
 
+![Tela Criar Prova](docs/telas/04-criar-prova.png)
+
+*Figura 6.4 — Montagem de uma prova com a seleção das questões.*
+
 Elementos principais:
 
 * Título da prova;
@@ -203,6 +281,10 @@ Elementos principais:
 ### 6.5 Banco de Questões
 
 Tela responsável por centralizar as questões cadastradas.
+
+![Tela Banco de Questões](docs/telas/05-banco-questoes.png)
+
+*Figura 6.5 — Banco de questões com busca, filtros e ações sobre cada questão.*
 
 Elementos principais:
 
@@ -222,6 +304,10 @@ Elementos principais:
 
 Tela destinada ao cadastro de uma nova questão de múltipla escolha.
 
+![Tela Nova Questão](docs/telas/06-nova-questao.png)
+
+*Figura 6.6 — Cadastro de uma questão de múltipla escolha com definição do gabarito.*
+
 Elementos principais:
 
 * Disciplina;
@@ -238,6 +324,10 @@ Elementos principais:
 ### 6.7 Resultado da Prova
 
 Tela voltada ao professor, responsável pela apresentação do resultado de um aluno após a correção da prova. O aluno não acessa o aplicativo: é o professor quem visualiza a nota, o desempenho e as respostas do aluno.
+
+![Tela Resultado da Prova](docs/telas/07-resultado.png)
+
+*Figura 6.7 — Resultado de um aluno com nota, acertos, erros e correção detalhada.*
 
 Elementos principais:
 
@@ -303,12 +393,28 @@ Os wireframes validaram o fluxo de utilização do aplicativo, e as telas implem
 
 Status: Em desenvolvimento 🚧
 
-O aplicativo já possui código Flutter funcional para as telas de abertura, login, perfil, minhas provas, criar prova, banco de questões, nova questão e resultado da prova. Nesta etapa essas telas trabalham com dados mock (de exemplo), e a integração com o Firestore está em andamento.
+Entrega atual: N2.
+
+O aplicativo já possui código Flutter funcional para as telas de abertura, login, perfil, minhas provas, criar prova, banco de questões, nova questão e resultado da prova. Nesta etapa as principais telas já leem e gravam no Firestore:
+
+* **Minhas Provas:** lista, pesquisa e filtra as provas gravadas no Firestore, cria novas provas e atualiza rascunhos e provas postadas;
+* **Banco de Questões e Nova Questão:** gravam, editam, duplicam e excluem questões (inclusive rascunhos) no Firestore;
+* **Camada de acesso a dados:** `ProvasRepository`, `QuestoesRepository` e `ResultadosRepository`, em `lib/data/`, gravam o `professorId` e filtram as consultas por ele (RNF08);
+* **Tratamento de erros:** mensagens de erro, estados de carregando, lista vazia e erro, e avisos nas telas (RNF09);
+* **Resultado da prova:** o resultado pode ser compartilhado pelo menu de compartilhamento do celular (RF22).
+
+O que ainda é local ou de exemplo:
+
+* O login usa usuários de teste que ficam no próprio aplicativo (`lib/screens/login/mock_usuario.dart`). O Firebase Authentication não foi implementado e a coleção `usuarios` ainda não é lida nem gravada;
+* O banco de questões começa com três questões de exemplo e não lista as questões que já estão no Firestore. As questões gravadas aparecem na lista durante o uso do aplicativo, mas não são lidas de volta ao abrir a tela de novo;
+* A tela de criar prova escolhe as questões de uma lista de exemplo que está no código, e não do banco de questões do Firestore;
+* A tela de resultado usa a prova gravada no Firestore, mas as respostas marcadas e a nota são geradas no próprio aplicativo, e a coleção `resultados` ainda não é lida nem gravada pelas telas;
+* O filtro por professor (RNF08) é feito pelo aplicativo. As regras de segurança do Firestore só poderão garantir isso quando houver autenticação.
 
 Ainda não foram implementados:
 
 * Leitura do QR Code e do gabarito pelo professor para a correção automatizada (RF16);
-* Compartilhamento e exportação do resultado (RF22);
+* Autenticação pelo Firebase (RF01 e RNF04, parciais);
 * Fluxo completo de recuperação de senha (RF02, parcial).
 
 Vídeo de apresentação: https://www.youtube.com/watch?v=Q-urOUDrMoM
@@ -337,19 +443,165 @@ flutter doctor
 git clone https://github.com/cauacozz11/app-mobile.git
 cd app-mobile
 
-# 2. Baixar as dependências
+# 2. Colocar o arquivo google-services.json em android/app/
+#    (ele não vem no repositório; veja a observação abaixo)
+
+# 3. Baixar as dependências
 flutter pub get
 
-# 3. Listar os dispositivos disponíveis
+# 4. Listar os dispositivos disponíveis
 flutter devices
 
-# 4. Executar o aplicativo
+# 5. Executar o aplicativo
 flutter run
 ```
 
 ### Observações
 
-* Para compilar o app, é necessário o arquivo `google-services.json` do projeto Firebase em `android/app/`. Ele não fica no repositório; peça ao responsável pelo Firebase do grupo.
+* **Passo 2, obrigatório:** para compilar o app, é necessário o arquivo `google-services.json` do projeto Firebase em `android/app/google-services.json`. Ele não fica no repositório (está no `.gitignore`); peça ao responsável pelo Firebase do grupo e copie o arquivo para essa pasta antes de rodar o `flutter run`.
 * Para entrar no aplicativo, use um dos usuários de teste: `professor@escola.com` / `provaleve` ou `caua@provaleve.com` / `123456`.
 
 ---
+
+## 12. Stack Tecnológica
+
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
+![Cloud Firestore](https://img.shields.io/badge/Cloud%20Firestore-FF6F00?style=flat-square&logo=firebase&logoColor=white)
+
+* **Flutter:** framework usado para criar o aplicativo móvel (interface em Material Design);
+* **Dart:** linguagem do aplicativo, com SDK `^3.13.2` (definido no `pubspec.yaml`);
+* **Firebase:** plataforma do projeto, inicializada no app pelo `firebase_core` (`^5.1.0`);
+* **Cloud Firestore:** banco de dados NoSQL do projeto, acessado pelo pacote `cloud_firestore` (`^7.1.0`);
+* **share_plus:** pacote (`^13.3.1`) usado para compartilhar o resultado da prova pelo menu de compartilhamento do celular.
+
+---
+
+## 13. Estrutura de Pastas
+
+```text
+app-mobile/
+├── docs/
+│   ├── modelo_firestore.md
+│   └── telas/
+├── lib/
+│   ├── data/
+│   │   ├── firestore_repository.dart
+│   │   ├── provas_repository.dart
+│   │   ├── questoes_repository.dart
+│   │   └── resultados_repository.dart
+│   ├── models/
+│   │   ├── alternativa.dart
+│   │   ├── prova.dart
+│   │   ├── questao.dart
+│   │   ├── resultado.dart
+│   │   ├── sessao.dart
+│   │   └── usuario.dart
+│   ├── screens/
+│   │   ├── login/
+│   │   ├── perfil/
+│   │   ├── provas/
+│   │   ├── questoes/
+│   │   ├── resultados/
+│   │   └── splash.dart
+│   ├── utils/
+│   │   ├── Validators.dart
+│   │   └── mensagem_erro.dart
+│   ├── widgets/
+│   │   └── estado_tela.dart
+│   ├── firebase_options.dart
+│   └── main.dart
+├── test/
+└── pubspec.yaml
+```
+
+* **docs/:** documentação do projeto. `modelo_firestore.md` descreve as coleções do Firestore e `telas/` guarda os prints das telas usados neste README;
+* **lib/data/:** camada de acesso ao Firestore. `FirestoreRepository` tem as operações comuns (listar, buscar, criar, atualizar e excluir, com `professorId`) e cada coleção tem o seu repositório;
+* **lib/models/:** classes de domínio (`Usuario`, `Questao`, `Alternativa`, `Prova`, `Resultado`), com conversão de e para o Firestore (`toMap` e `fromMap`), e a `Sessao`, que guarda o professor logado;
+* **lib/screens/:** as telas do aplicativo, uma subpasta para cada área:
+  * **login/:** tela de login e os usuários de teste (`mock_usuario.dart`);
+  * **perfil/:** tela de perfil do professor;
+  * **provas/:** listagem de provas (Minhas Provas) e criação de prova (tela e janela de criação);
+  * **questoes/:** banco de questões, cadastro de nova questão e a classe `QuestaoCadastrada`;
+  * **resultados/:** tela de resultado da prova e os dados de exemplo (`mock_resultado.dart`);
+  * **splash.dart:** tela de abertura;
+* **lib/utils/:** funções de apoio: validação de campos (`Validators.dart`) e mensagens de erro para o professor (`mensagem_erro.dart`);
+* **lib/widgets/:** componentes reutilizáveis; `estado_tela.dart` traz os estados de carregando, lista vazia e erro;
+* **test/:** testes automatizados (`mensagem_erro_test.dart`).
+
+---
+
+## 14. Modelo de Dados
+
+O ProvaLeve guarda os dados em quatro coleções na raiz do Firestore. Em todas elas o id do documento é o mesmo `id` da classe de domínio.
+
+| Coleção | O que guarda | Situação no app |
+| ------- | ------------ | --------------- |
+| `usuarios` | Dados do professor: nome, e-mail, instituição e disciplinas (a senha não é gravada). | Ainda não é lida nem gravada, pois o login usa usuários de teste. |
+| `questoes` | Banco de questões do professor: disciplina, dificuldade, rascunho, enunciado, alternativas e alternativa correta. | Gravada, editada e excluída pelo banco de questões. |
+| `provas` | Provas montadas pelo professor: título, disciplina, situação, data e uma cópia das questões escolhidas. | Lida e gravada pela tela Minhas Provas. |
+| `resultados` | Resultado da correção de um aluno: prova corrigida, respostas marcadas e nota. | Repositório pronto; ainda não é usada pelas telas. |
+
+As coleções `questoes`, `provas` e `resultados` guardam o `professorId`, que liga cada documento ao professor dono dele e permite listar só os dados dele (RNF08). A prova guarda uma cópia das questões, então editar ou excluir uma questão do banco não altera uma prova já montada.
+
+O diagrama, os campos de cada coleção e as decisões de modelagem estão em [docs/modelo_firestore.md](docs/modelo_firestore.md).
+
+---
+
+## 15. Backlog de Atividades da N2
+
+O backlog segue o planejamento da N2 (`PlanejamentoN2.xlsx`). O status considera o que já foi mesclado na branch `main` por commit ou Pull Request.
+
+### Cauã Cozzarin
+
+| Tarefa | Prazo | Status |
+| ------ | ----- | ------ |
+| 1. Reunião de planejamento e divisão de tarefas | 02/10/2026 | Em andamento |
+| 8. Tela 1: trocar dados mock por leitura do Firestore | 16/10/2026 | Em andamento |
+| 12. Funcionalidade central do escopo do cliente (ponta a ponta) | 22/10/2026 | Em andamento |
+| 19. Zerar PRs pendentes e merge final | 27/10/2026 | Em andamento |
+| 22. Diário de bordo individual – Cauã Cozzarin | 29/10/2026 | Em andamento |
+
+### Mateus Wroblewski
+
+| Tarefa | Prazo | Status |
+| ------ | ----- | ------ |
+| 2. Levantar pendências da N1 (itens "não atendido" do README) | 05/10/2026 | Concluído |
+| 3. Ampliar e ajustar as Issues no repositório (Issues #23 a #31) | 06/10/2026 | Concluído |
+| 9. Tela 2: trocar dados mock por gravação no Firestore (Nova Questão, PR #33) | 16/10/2026 | Concluído |
+| 16. Ajustes pendentes da N1 (RNF e tela de resultado) | 23/10/2026 | Concluído |
+| 20. README v2: escopo, telas e RF/RNF (PR #22 e esta atualização) | 28/10/2026 | Concluído |
+| 23. Diário de bordo individual – Mateus Wroblewski | 29/10/2026 | Concluído |
+| Extra: revisão dos PRs #21, #32 e #34 | — | Concluído |
+| Extra: merge do PR #32 | — | Concluído |
+
+### Mário Augusto Bussarello Volpato
+
+| Tarefa | Prazo | Status |
+| ------ | ----- | ------ |
+| 4. Criar projeto Firebase, ativar Firestore e conectar o app | 06/10/2026 | Concluído |
+| 10. Tela 3: edição e exclusão no Firestore | 19/10/2026 | Concluído |
+| 14. Validação de formulários antes de gravar | 21/10/2026 | Concluído |
+| 21. README v2: estado da integração com o banco | 28/10/2026 | Em andamento |
+| 24. Diário de bordo individual – Mário Augusto Bussarello Volpato | 29/10/2026 | Em andamento |
+
+### Felipe Tomio Maciel
+
+| Tarefa | Prazo | Status |
+| ------ | ----- | ------ |
+| 5. Modelar coleções e documentos do Firestore | 06/10/2026 | Concluído |
+| 7. Criar camada de acesso a dados (CRUD com Firestore) | 13/10/2026 | Concluído |
+| 13. Tratamento de erros e telas vazias/carregando | 22/10/2026 | Concluído |
+| 17. Testes do fluxo completo e dos RNF | 26/10/2026 | Em andamento |
+| 25. Diário de bordo individual – Felipe Tomio Maciel | 29/10/2026 | Em andamento |
+
+### Matheus Henrique Pompeu
+
+| Tarefa | Prazo | Status |
+| ------ | ----- | ------ |
+| 6. Ampliar/ajustar classes de domínio | 09/10/2026 | Concluído |
+| 11. Tela 4: consulta/filtros no Firestore | 19/10/2026 | Concluído |
+| 15. Ajustes pendentes da N1 (telas/RF) | 23/10/2026 | Concluído |
+| 18. Revisão e merge dos PRs (semanas 1 a 4) | 27/10/2026 | Em andamento |
+| 26. Diário de bordo individual – Matheus Henrique Pompeu | 29/10/2026 | Em andamento |
