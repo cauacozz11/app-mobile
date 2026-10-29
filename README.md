@@ -50,6 +50,7 @@ Provas mais simples. Tempo para ensinar.
   * [6.6 Nova Questão](#66-nova-questão)
   * [6.7 Resultado da Prova](#67-resultado-da-prova)
   * [6.8 Correção da Prova](#68-correção-da-prova)
+  * [6.9 Lista de Resultados](#69-lista-de-resultados)
 * [7. Fluxo Principal do Sistema](#7-fluxo-principal-do-sistema)
 * [8. Público-Alvo](#8-público-alvo)
 * [9. Interface e Experiência de Uso](#9-interface-e-experiência-de-uso)
@@ -157,11 +158,11 @@ Não fazem parte do escopo inicial:
 | **RF14** | O sistema deve permitir excluir questões. | Atendido (Firestore) |
 | **RF15** | O sistema deve permitir salvar uma questão como rascunho. | Atendido (Firestore) |
 | **RF16** | O sistema deve realizar a correção automatizada das provas. | Atendido (correção feita no aplicativo a partir das respostas marcadas pelo professor; a leitura por QR Code ainda não existe) |
-| **RF17** | O sistema deve permitir que o professor visualize a nota obtida pelo aluno. | Parcial (mostra o resultado real logo após a correção; ao reabrir a prova pela lista, ainda usa dados locais) |
-| **RF18** | O sistema deve permitir que o professor visualize a quantidade de acertos e erros do aluno. | Parcial (mostra o resultado real logo após a correção; ao reabrir a prova pela lista, ainda usa dados locais) |
-| **RF19** | O sistema deve permitir que o professor visualize a resposta marcada pelo aluno. | Parcial (mostra o resultado real logo após a correção; ao reabrir a prova pela lista, ainda usa dados locais) |
-| **RF20** | O sistema deve permitir que o professor visualize a alternativa correta nas questões em que o aluno errou. | Parcial (mostra o resultado real logo após a correção; ao reabrir a prova pela lista, ainda usa dados locais) |
-| **RF21** | O sistema deve permitir que o professor visualize a correção detalhada da prova do aluno. | Parcial (mostra o resultado real logo após a correção; ao reabrir a prova pela lista, ainda usa dados locais) |
+| **RF17** | O sistema deve permitir que o professor visualize a nota obtida pelo aluno. | Atendido (Firestore) |
+| **RF18** | O sistema deve permitir que o professor visualize a quantidade de acertos e erros do aluno. | Atendido (Firestore) |
+| **RF19** | O sistema deve permitir que o professor visualize a resposta marcada pelo aluno. | Atendido (Firestore) |
+| **RF20** | O sistema deve permitir que o professor visualize a alternativa correta nas questões em que o aluno errou. | Atendido (Firestore) |
+| **RF21** | O sistema deve permitir que o professor visualize a correção detalhada da prova do aluno. | Atendido (Firestore) |
 | **RF22** | O sistema deve permitir compartilhar ou exportar o resultado. | Atendido (compartilhamento com share_plus) |
 
 Os requisitos foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente. A coluna Situação mostra o que já está implementado no aplicativo.
@@ -172,12 +173,12 @@ Legenda da situação:
 * **Atendido (dados locais):** a tela e o fluxo existem no aplicativo, mas ainda usam dados de exemplo ou dados gerados no próprio aplicativo, sem leitura do banco;
 * **Atendido (compartilhamento com share_plus):** o resultado é compartilhado pelo menu de compartilhamento do celular;
 * **Atendido (usuários de teste locais):** o login funciona com os usuários de teste do aplicativo, sem autenticação pelo Firebase;
-* **Parcial:** a funcionalidade existe, mas está incompleta: o recuperar senha (RF02) tem só a interface e o resultado da prova (RF17 a RF21) só é real logo após a correção;
+* **Parcial:** existe apenas a interface, sem a lógica completa;
 * **Não atendido:** ainda não foi implementado.
 
 Observação: a correção automatizada (RF16) é feita pelo professor. Na tela de correção, ele informa o nome do aluno e marca a alternativa escolhida em cada questão; o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados` e muda a prova para "corrigida". Ainda falta a leitura do QR Code e do gabarito da prova do aluno, que dispensaria a marcação manual das respostas. A tela de resultado (RF17 a RF21) é voltada ao professor, e não ao aluno.
 
-Observação sobre o Firestore e os dados locais: o banco de questões lista, cria, edita, duplica e exclui as questões no Firestore (RF08 a RF15), e a lista é carregada do banco sempre que a tela é aberta. Já a tela de criar prova (RF07) ainda escolhe as questões de uma lista de exemplo que está no código. A tela de resultado (RF17 a RF21) mostra o resultado real (respostas marcadas e nota) logo depois de a prova ser corrigida, porque ele acabou de ser gravado no Firestore. Porém, ao reabrir uma prova já corrigida pela lista (botão "Ver resultado"), o aplicativo ainda monta um resultado de exemplo, com respostas simuladas e nota fixa, em vez de ler o resultado gravado em `resultados`. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
+Observação sobre o Firestore e os dados locais: o banco de questões lista, cria, edita, duplica e exclui as questões no Firestore (RF08 a RF15), e a lista é carregada do banco sempre que a tela é aberta. Já a tela de criar prova (RF07) ainda escolhe as questões de uma lista de exemplo que está no código. Os resultados (RF17 a RF21) vêm do Firestore: ao tocar em "Ver resultado" ou "Visualizar Resultados" em uma prova corrigida, o aplicativo lista os resultados gravados na coleção `resultados` (`listarPorProva`), com a média da turma e a nota e os acertos de cada aluno, e a tela de resultado mostra o nome do aluno, as respostas marcadas e a correção detalhada. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
 
 ---
 
@@ -202,7 +203,7 @@ A preferência do cliente é por uma interface minimalista, lógica, amigável e
 
 ## 6. Telas Principais
 
-O ProvaLeve possui 8 telas principais, definidas nos wireframes e já implementadas em Flutter.
+O ProvaLeve possui 9 telas principais, definidas nos wireframes e já implementadas em Flutter.
 
 ### 6.1 Abertura
 
@@ -363,6 +364,24 @@ Elementos principais:
 
 ---
 
+### 6.9 Lista de Resultados
+
+Tela aberta por "Visualizar Resultados" (ou "Ver resultado") em uma prova corrigida na tela Minhas Provas. Ela lê do Firestore os resultados gravados na correção daquela prova e mostra o desempenho da turma. Ao tocar em um aluno, o professor abre a tela de resultado (6.7) com o nome, a nota e a correção detalhada.
+
+![Tela Lista de Resultados](docs/telas/09-lista-resultados.png)
+
+*Figura 6.9 — Lista dos alunos corrigidos de uma prova, com a média da turma, a nota e os acertos de cada um.*
+
+Elementos principais:
+
+* Título e disciplina da prova;
+* Quantidade de alunos corrigidos;
+* Média da turma;
+* Lista de alunos, em ordem alfabética, com a nota e os acertos de cada um;
+* Estados de carregando, erro (com "Tentar novamente") e "Nenhum aluno corrigido".
+
+---
+
 ## 7. Fluxo Principal do Sistema
 
 
@@ -422,13 +441,14 @@ O aplicativo já possui código Flutter funcional para as telas de abertura, log
 * **Camada de acesso a dados:** `ProvasRepository`, `QuestoesRepository` e `ResultadosRepository`, em `lib/data/`, gravam o `professorId` e filtram as consultas por ele (RNF08);
 * **Tratamento de erros:** mensagens de erro, estados de carregando, lista vazia e erro, e avisos nas telas (RNF09);
 * **Correção da prova:** o professor informa o nome do aluno e marca as respostas; o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados` e muda a prova para "corrigida" (RF16);
-* **Resultado da prova:** mostra o resultado logo após a correção e pode ser compartilhado pelo menu de compartilhamento do celular (RF22).
+* **Lista de resultados:** "Visualizar Resultados" em Minhas Provas lista os resultados reais da prova lidos do Firestore, com a média da turma e a nota e os acertos de cada aluno (RF17 a RF21);
+* **Resultado da prova:** mostra o nome do aluno, a nota, os acertos e erros e a correção detalhada, e pode ser compartilhado pelo menu de compartilhamento do celular (RF22).
 
 O que ainda é local ou de exemplo:
 
 * O login usa usuários de teste que ficam no próprio aplicativo (`lib/screens/login/mock_usuario.dart`). O Firebase Authentication não foi implementado e a coleção `usuarios` ainda não é lida nem gravada;
-* A tela de criar prova escolhe as questões de uma lista de exemplo que está no código, e não do banco de questões do Firestore;
-* Ao reabrir pela lista uma prova que já foi corrigida ("Ver resultado"), a tela de resultado ainda usa respostas simuladas e nota fixa, em vez de ler o resultado gravado. A coleção `resultados` hoje só é gravada (na correção); nenhuma tela lê os resultados de volta;
+* As telas de criar prova (`criar_prova_modal.dart` e `criar_prova_screen.dart`) ainda escolhem as questões de uma lista de exemplo que está no código, e não do banco de questões do Firestore;
+* As respostas de cada aluno são marcadas manualmente pelo professor na tela de correção, pois a leitura por QR Code ainda não existe;
 * O filtro por professor (RNF08) é feito pelo aplicativo. As regras de segurança do Firestore só poderão garantir isso quando houver autenticação.
 
 Ainda não foram implementados:
@@ -549,7 +569,7 @@ app-mobile/
   * **perfil/:** tela de perfil do professor;
   * **provas/:** listagem de provas (Minhas Provas) e criação de prova (tela e janela de criação);
   * **questoes/:** banco de questões, cadastro de nova questão e a classe `QuestaoCadastrada`;
-  * **resultados/:** tela de resultado da prova e os dados de exemplo (`mock_resultado.dart`);
+  * **resultados/:** lista de resultados de uma prova (`lista_resultados_screen.dart`) e tela de resultado de um aluno (`resultado_prova_screen.dart`);
   * **splash.dart:** tela de abertura;
 * **lib/utils/:** funções de apoio: validação de campos (`validators.dart`) e a conta da correção (`correcao.dart`), além das mensagens de erro para o professor (`mensagem_erro.dart`);
 * **lib/widgets/:** componentes reutilizáveis; `estado_tela.dart` traz os estados de carregando, lista vazia e erro;
@@ -566,7 +586,7 @@ O ProvaLeve guarda os dados em quatro coleções na raiz do Firestore. Em todas 
 | `usuarios` | Dados do professor: nome, e-mail, instituição e disciplinas (a senha não é gravada). | Ainda não é lida nem gravada, pois o login usa usuários de teste. |
 | `questoes` | Banco de questões do professor: disciplina, dificuldade, rascunho, enunciado, alternativas e alternativa correta. | Lida, gravada, editada e excluída pelo banco de questões. |
 | `provas` | Provas montadas pelo professor: título, disciplina, situação, data e uma cópia das questões escolhidas. | Lida e gravada pela tela Minhas Provas. |
-| `resultados` | Resultado da correção de um aluno: prova corrigida, nome do aluno, respostas marcadas e nota. | Gravada pela tela de correção (um documento por aluno corrigido, com o nome do aluno). Ainda não é lida pelas telas. |
+| `resultados` | Resultado da correção de um aluno: prova corrigida, nome do aluno, respostas marcadas e nota. | Gravada pela tela de correção (um documento por aluno corrigido, com o nome do aluno) e lida pela lista de resultados da prova. |
 
 As coleções `questoes`, `provas` e `resultados` guardam o `professorId`, que liga cada documento ao professor dono dele e permite listar só os dados dele (RNF08). A prova guarda uma cópia das questões, então editar ou excluir uma questão do banco não altera uma prova já montada.
 
@@ -588,6 +608,7 @@ O backlog segue o planejamento da N2 (`PlanejamentoN2.xlsx`). O status considera
 | 19. Zerar PRs pendentes e merge final | 27/10/2026 | Em andamento |
 | 22. Diário de bordo individual – Cauã Cozzarin | 29/10/2026 | Em andamento |
 | Extra: ajustes gerais (renomear `validators.dart` e remover o teste de conexão do `main.dart`, PR #37) | — | Concluído |
+| Extra: Visualizar Resultados com a lista de resultados reais lidos do Firestore e remoção do `mock_resultado.dart` (PR #40) | — | Concluído |
 
 ### Mateus Wroblewski
 
