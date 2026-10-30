@@ -661,11 +661,11 @@ O backlog segue o planejamento da N2 (`PlanejamentoN2.xlsx`). O status considera
 
 | Tarefa | Prazo | Status |
 | ------ | ----- | ------ |
-| 1. Reunião de planejamento e divisão de tarefas | 02/10/2026 | Em andamento |
-| 8. Tela 1: trocar dados mock por leitura do Firestore | 16/10/2026 | Em andamento |
+| 1. Reunião de planejamento e divisão de tarefas | 02/10/2026 | Concluído |
+| 8. Tela 1: trocar dados mock por leitura do Firestore | 16/10/2026 | Concluído |
 | 12. Funcionalidade central do escopo do cliente (ponta a ponta): tela de correção da prova (PR #39) | 22/10/2026 | Concluído |
-| 19. Zerar PRs pendentes e merge final | 27/10/2026 | Em andamento |
-| 22. Diário de bordo individual – Cauã Cozzarin | 29/10/2026 | Em andamento |
+| 19. Zerar PRs pendentes e merge final | 27/10/2026 | Concluído |
+| 22. Diário de bordo individual – Cauã Cozzarin | 29/10/2026 | Concluído |
 | Extra: ajustes gerais (renomear `validators.dart` e remover o teste de conexão do `main.dart`, PR #37) | — | Concluído |
 | Extra: Visualizar Resultados com a lista de resultados reais lidos do Firestore e remoção do `mock_resultado.dart` (PR #40) | — | Concluído |
 
@@ -690,8 +690,8 @@ O backlog segue o planejamento da N2 (`PlanejamentoN2.xlsx`). O status considera
 | 4. Criar projeto Firebase, ativar Firestore e conectar o app | 06/10/2026 | Concluído |
 | 10. Tela 3: edição e exclusão no Firestore | 19/10/2026 | Concluído |
 | 14. Validação de formulários antes de gravar | 21/10/2026 | Concluído |
-| 21. README v2: estado da integração com o banco | 28/10/2026 | Em andamento |
-| 24. Diário de bordo individual – Mário Augusto Bussarello Volpato | 29/10/2026 | Em andamento |
+| 21. README v2: estado da integração com o banco | 28/10/2026 | Concluído |
+| 24. Diário de bordo individual – Mário Augusto Bussarello Volpato | 29/10/2026 | Concluído |
 
 ### Felipe Tomio Maciel
 
@@ -700,8 +700,8 @@ O backlog segue o planejamento da N2 (`PlanejamentoN2.xlsx`). O status considera
 | 5. Modelar coleções e documentos do Firestore | 06/10/2026 | Concluído |
 | 7. Criar camada de acesso a dados (CRUD com Firestore) | 13/10/2026 | Concluído |
 | 13. Tratamento de erros e telas vazias/carregando | 22/10/2026 | Concluído |
-| 17. Testes do fluxo completo e dos RNF | 26/10/2026 | Em andamento |
-| 25. Diário de bordo individual – Felipe Tomio Maciel | 29/10/2026 | Em andamento |
+| 17. Testes do fluxo completo e dos RNF | 26/10/2026 | Concluído |
+| 25. Diário de bordo individual – Felipe Tomio Maciel | 29/10/2026 | Concluído |
 
 ### Matheus Henrique Pompeu
 
@@ -710,5 +710,5 @@ O backlog segue o planejamento da N2 (`PlanejamentoN2.xlsx`). O status considera
 | 6. Ampliar/ajustar classes de domínio | 09/10/2026 | Concluído |
 | 11. Tela 4: consulta/filtros no Firestore | 19/10/2026 | Concluído |
 | 15. Ajustes pendentes da N1 (telas/RF) | 23/10/2026 | Concluído |
-| 18. Revisão e merge dos PRs (semanas 1 a 4) | 27/10/2026 | Em andamento |
-| 26. Diário de bordo individual – Matheus Henrique Pompeu | 29/10/2026 | Em andamento |
+| 18. Revisão e merge dos PRs (semanas 1 a 4) | 27/10/2026 | Concluído |
+| 26. Diário de bordo individual – Matheus Henrique Pompeu | 29/10/2026 | Concluído |
