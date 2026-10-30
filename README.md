@@ -148,7 +148,7 @@ Não fazem parte do escopo inicial:
 | **RF04** | O sistema deve permitir pesquisar provas. | Atendido (Firestore) |
 | **RF05** | O sistema deve permitir filtrar provas por situação. | Atendido (Firestore) |
 | **RF06** | O sistema deve permitir criar uma nova prova. | Atendido (Firestore) |
-| **RF07** | O sistema deve permitir selecionar questões para compor uma prova. | Atendido (dados locais) |
+| **RF07** | O sistema deve permitir selecionar questões para compor uma prova. | Atendido (Firestore) |
 | **RF08** | O sistema deve permitir pesquisar questões no banco de questões. | Atendido (Firestore) |
 | **RF09** | O sistema deve permitir cadastrar novas questões. | Atendido (Firestore) |
 | **RF10** | O sistema deve permitir cadastrar alternativas para uma questão. | Atendido (Firestore) |
@@ -169,8 +169,7 @@ Os requisitos foram definidos a partir das funcionalidades descritas nos wirefra
 
 Legenda da situação:
 
-* **Atendido (Firestore):** a funcionalidade está implementada e grava ou lê os dados no Firestore. As provas (RF03 a RF06) usam o `ProvasRepository` e as questões (RF08 a RF15) usam o `QuestoesRepository`;
-* **Atendido (dados locais):** a tela e o fluxo existem no aplicativo, mas ainda usam dados de exemplo ou dados gerados no próprio aplicativo, sem leitura do banco;
+* **Atendido (Firestore):** a funcionalidade está implementada e grava ou lê os dados no Firestore. As provas (RF03 a RF06) usam o `ProvasRepository` e as questões (RF07 e RF08 a RF15) usam o `QuestoesRepository`;
 * **Atendido (compartilhamento com share_plus):** o resultado é compartilhado pelo menu de compartilhamento do celular;
 * **Atendido (usuários de teste locais):** o login funciona com os usuários de teste do aplicativo, sem autenticação pelo Firebase;
 * **Parcial:** existe apenas a interface, sem a lógica completa;
@@ -178,7 +177,7 @@ Legenda da situação:
 
 Observação: a correção automatizada (RF16) é feita pelo professor. Na tela de correção, ele informa o nome do aluno e marca a alternativa escolhida em cada questão; o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados` e muda a prova para "corrigida". Ainda falta a leitura do QR Code e do gabarito da prova do aluno, que dispensaria a marcação manual das respostas. A tela de resultado (RF17 a RF21) é voltada ao professor, e não ao aluno.
 
-Observação sobre o Firestore e os dados locais: o banco de questões lista, cria, edita, duplica e exclui as questões no Firestore (RF08 a RF15), e a lista é carregada do banco sempre que a tela é aberta. Já a tela de criar prova (RF07) ainda escolhe as questões de uma lista de exemplo que está no código. Os resultados (RF17 a RF21) vêm do Firestore: ao tocar em "Ver resultado" ou "Visualizar Resultados" em uma prova corrigida, o aplicativo lista os resultados gravados na coleção `resultados` (`listarPorProva`), com a média da turma e a nota e os acertos de cada aluno, e a tela de resultado mostra o nome do aluno, as respostas marcadas e a correção detalhada. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
+Observação sobre o Firestore e os dados locais: o banco de questões lista, cria, edita, duplica e exclui as questões no Firestore (RF08 a RF15), e a lista é carregada do banco sempre que a tela é aberta. A tela de criar prova (RF07) lista as questões publicadas do banco (sem os rascunhos) para o professor escolher. Os resultados (RF17 a RF21) vêm do Firestore: ao tocar em "Ver resultado" ou "Visualizar Resultados" em uma prova corrigida, o aplicativo lista os resultados gravados na coleção `resultados` (`listarPorProva`), com a média da turma e a nota e os acertos de cada aluno, e a tela de resultado mostra o nome do aluno, as respostas marcadas e a correção detalhada. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
 
 ---
 
@@ -438,6 +437,7 @@ O aplicativo já possui código Flutter funcional para as telas de abertura, log
 
 * **Minhas Provas:** lista, pesquisa e filtra as provas gravadas no Firestore, cria novas provas e atualiza rascunhos e provas postadas;
 * **Banco de Questões e Nova Questão:** a tela lista as questões do Firestore ao abrir e permite criar, editar, duplicar e excluir questões (inclusive rascunhos) direto no Firestore;
+* **Criar Prova:** a seleção de questões lê as questões publicadas do Firestore (sem rascunhos), com busca e filtro por dificuldade, e tem estados de carregando, erro e vazio (RF07);
 * **Camada de acesso a dados:** `ProvasRepository`, `QuestoesRepository` e `ResultadosRepository`, em `lib/data/`, gravam o `professorId` e filtram as consultas por ele (RNF08);
 * **Tratamento de erros:** mensagens de erro, estados de carregando, lista vazia e erro, e avisos nas telas (RNF09);
 * **Correção da prova:** o professor informa o nome do aluno e marca as respostas; o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados` e muda a prova para "corrigida" (RF16);
@@ -447,7 +447,6 @@ O aplicativo já possui código Flutter funcional para as telas de abertura, log
 O que ainda é local ou de exemplo:
 
 * O login usa usuários de teste que ficam no próprio aplicativo (`lib/screens/login/mock_usuario.dart`). O Firebase Authentication não foi implementado e a coleção `usuarios` ainda não é lida nem gravada;
-* As telas de criar prova (`criar_prova_modal.dart` e `criar_prova_screen.dart`) ainda escolhem as questões de uma lista de exemplo que está no código, e não do banco de questões do Firestore;
 * As respostas de cada aluno são marcadas manualmente pelo professor na tela de correção, pois a leitura por QR Code ainda não existe;
 * O filtro por professor (RNF08) é feito pelo aplicativo. As regras de segurança do Firestore só poderão garantir isso quando houver autenticação.
 
