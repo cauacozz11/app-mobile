@@ -55,6 +55,8 @@ Provas mais simples. Tempo para ensinar.
 * [8. Público-Alvo](#8-público-alvo)
 * [9. Interface e Experiência de Uso](#9-interface-e-experiência-de-uso)
 * [10. Status do Projeto](#10-status-do-projeto)
+  * [10.1 Estado da integração com o banco de dados](#101-estado-da-integração-com-o-banco-de-dados)
+  * [10.2 Configuração do Firebase no aplicativo](#102-configuração-do-firebase-no-aplicativo)
 * [11. Como Rodar o Projeto](#11-como-rodar-o-projeto)
 * [12. Stack Tecnológica](#12-stack-tecnológica)
 * [13. Estrutura de Pastas](#13-estrutura-de-pastas)
@@ -457,6 +459,64 @@ Ainda não foram implementados:
 * Fluxo completo de recuperação de senha (RF02, parcial).
 
 Vídeo de apresentação: https://www.youtube.com/watch?v=Q-urOUDrMoM
+
+
+### 10.1 Estado da integração com o banco de dados
+
+O ProvaLeve usa o **Cloud Firestore** (Firebase) como banco de dados. A tabela mostra, para cada parte do aplicativo, se ela já lê e grava no Firestore ou se ainda usa dados locais.
+
+| Parte do aplicativo | Operação | Estado | Onde está |
+| ------------------- | -------- | ------ | --------- |
+| Inicialização do Firebase | Conexão do aplicativo com o projeto Firebase | Integrada | `lib/main.dart` e `lib/firebase_options.dart` |
+| Classes de domínio | Conversão de e para o Firestore (`toMap` e `fromMap`) | Integrada | `lib/models/` |
+| Login | Entrar com e-mail e senha | Local (usuários de teste) | `lib/screens/login/mock_usuario.dart` |
+| Recuperar senha | Aviso para falar com a instituição | Local | `lib/screens/login/` |
+| Minhas Provas | Listar, pesquisar, filtrar, criar e atualizar provas | Integrada | `ProvasRepository` |
+| Criar Prova | Listar as questões publicadas para seleção | Integrada | `QuestoesRepository` |
+| Banco de Questões | Listar, editar, duplicar e excluir questões | Integrada | `QuestoesRepository` |
+| Nova Questão | Criar questão e salvar como rascunho | Integrada | `QuestoesRepository` |
+| Correção da Prova | Gravar o resultado do aluno e mudar a prova para "corrigida" | Integrada | `ResultadosRepository` e `ProvasRepository` |
+| Lista de Resultados e Resultado da Prova | Ler os resultados gravados de uma prova | Integrada | `ResultadosRepository` |
+| Perfil | Mostrar os dados do professor logado | Local (usuário de teste) | `lib/screens/perfil/` |
+
+Legenda:
+
+* **Integrada:** a parte lê ou grava os dados no Firestore, sem lista fixa no código;
+* **Local:** a parte ainda usa dados que ficam dentro do aplicativo.
+
+Validação e tratamento de erros nas operações com o banco:
+
+* Os campos são validados antes de gravar. O login usa os validadores de `lib/utils/validators.dart` (e-mail e senha). O cadastro de questão exige a disciplina, o enunciado (mínimo de 10 caracteres), todas as alternativas preenchidas e sem repetição, e a alternativa correta marcada;
+* Ao editar uma questão, "Salvar rascunho" também exige os dados completos, para não sobrescrever no banco uma questão válida com dados incompletos;
+* Editar, duplicar e excluir mostram um aviso de sucesso ou de erro ao gravar, e excluir pede confirmação antes;
+* As listas têm estados de carregando, vazio e erro (RNF09).
+
+Os campos de cada coleção estão na seção [14. Modelo de Dados](#14-modelo-de-dados).
+
+### 10.2 Configuração do Firebase no aplicativo
+
+A conexão do aplicativo Android com o Firebase foi feita assim:
+
+1. O projeto **ProvaLeve** (`provaleve-46c08`, plano Spark) foi criado no console do Firebase e o **Cloud Firestore** foi ativado;
+2. As dependências `firebase_core` e `cloud_firestore` foram adicionadas ao `pubspec.yaml` (versões na seção [12. Stack Tecnológica](#12-stack-tecnológica));
+3. O comando `flutterfire configure` (plataforma Android) gerou o arquivo `lib/firebase_options.dart` e o arquivo `android/app/google-services.json`;
+4. No `lib/main.dart`, o Firebase é inicializado antes de abrir o aplicativo:
+
+```dart
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MyApp());
+}
+```
+
+Observações:
+
+* O `google-services.json` não fica no repositório. Para rodar o aplicativo, veja o passo 2 da seção [11. Como Rodar o Projeto](#11-como-rodar-o-projeto);
+* O acesso ao console do Firebase é feito por permissão da conta. Para ver os dados no console, peça ao responsável pelo Firebase do grupo para adicionar o seu e-mail ao projeto;
+* O filtro por professor (RNF08) é feito pelo aplicativo. As regras de segurança do Firestore só poderão garantir esse acesso quando o login passar a usar o Firebase Authentication.
 
 ---
 
