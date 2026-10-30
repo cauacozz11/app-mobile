@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:app_mobile/models/alternativa.dart';
+import 'package:app_mobile/data/questoes_repository.dart';
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/questao.dart';
+import 'package:app_mobile/utils/mensagem_erro.dart';
+import 'package:app_mobile/widgets/estado_tela.dart';
 
 class _Cores {
   static const Color background = Color(0xFFF8F5F0);
@@ -70,38 +72,71 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
     'Português',
   ];
 
-  late final List<_QuestaoItemBanco> _questoesDisponiveis;
+  List<_QuestaoItemBanco> _questoesDisponiveis = [];
   final Set<String> _questoesSelecionadasIds = {};
+  bool _carregando = true;
+  String? _erroCarregamento;
 
   @override
   void initState() {
     super.initState();
-    final banco = _carregarQuestoes();
     final prova = widget.provaInicial;
     if (prova != null) {
       _tituloController.text = prova.titulo;
       _disciplinaSelecionada = prova.disciplina;
-      final bancoPorId = {for (final item in banco) item.questao.id: item};
       _questoesSelecionadasIds.addAll(prova.questoes.map((q) => q.id));
-      _questoesDisponiveis = [
-        for (final questao in prova.questoes)
-          _QuestaoItemBanco(
-            questao: questao,
-            disciplina: bancoPorId[questao.id]?.disciplina ?? prova.disciplina,
-            dificuldade: bancoPorId[questao.id]?.dificuldade,
-          ),
-        ...banco.where(
-          (item) => !_questoesSelecionadasIds.contains(item.questao.id),
-        ),
+      _questoesDisponiveis = _mesclarComProva(const []);
+    }
+    _carregarQuestoes();
+  }
+
+  Future<void> _carregarQuestoes() async {
+    setState(() {
+      _carregando = true;
+      _erroCarregamento = null;
+    });
+    try {
+      final cadastradas = await QuestoesRepository.instance.listar();
+      if (!mounted) return;
+      final banco = [
+        for (final cadastrada in cadastradas)
+          if (!cadastrada.rascunho)
+            _QuestaoItemBanco(
+              questao: cadastrada.questao,
+              disciplina: cadastrada.disciplina,
+              dificuldade: cadastrada.dificuldade,
+            ),
       ];
-      return;
+      setState(() {
+        _questoesDisponiveis = _mesclarComProva(banco);
+        _carregando = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erroCarregamento = mensagemErro(e);
+        _carregando = false;
+      });
     }
-    _questoesDisponiveis = banco;
-    if (_questoesDisponiveis.length >= 3) {
-      _questoesSelecionadasIds.add(_questoesDisponiveis[0].questao.id);
-      _questoesSelecionadasIds.add(_questoesDisponiveis[1].questao.id);
-      _questoesSelecionadasIds.add(_questoesDisponiveis[2].questao.id);
-    }
+  }
+
+  /// Na edição de um rascunho de prova, as questões já escolhidas vêm
+  /// primeiro, mesmo que não estejam mais publicadas no banco.
+  List<_QuestaoItemBanco> _mesclarComProva(List<_QuestaoItemBanco> banco) {
+    final prova = widget.provaInicial;
+    if (prova == null) return banco;
+    final bancoPorId = {for (final item in banco) item.questao.id: item};
+    return [
+      for (final questao in prova.questoes)
+        _QuestaoItemBanco(
+          questao: questao,
+          disciplina: bancoPorId[questao.id]?.disciplina ?? prova.disciplina,
+          dificuldade: bancoPorId[questao.id]?.dificuldade,
+        ),
+      ...banco.where(
+        (item) => !_questoesSelecionadasIds.contains(item.questao.id),
+      ),
+    ];
   }
 
   @override
@@ -134,6 +169,7 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
   }
 
   void _concluirCriacao({required bool postar}) {
+    if (_carregando) return;
     final titulo = _tituloController.text.trim();
     if (titulo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -456,7 +492,22 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                 ),
                 const SizedBox(height: 14),
 
-                if (filtradas.isEmpty)
+                if (_carregando)
+                  const EstadoTela.carregando(
+                    titulo: 'Carregando questões...',
+                  )
+                else if (_erroCarregamento != null)
+                  EstadoTela.erro(
+                    mensagem: _erroCarregamento!,
+                    onTentarNovamente: _carregarQuestoes,
+                  )
+                else if (_questoesDisponiveis.isEmpty)
+                  const EstadoTela.vazio(
+                    titulo: 'Nenhuma questão disponível',
+                    mensagem: 'Cadastre questões no Banco de Questões primeiro',
+                    icone: Icons.quiz_outlined,
+                  )
+                else if (filtradas.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(32),
                     alignment: Alignment.center,
@@ -798,100 +849,5 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
         ),
       ),
     );
-  }
-
-  static List<_QuestaoItemBanco> _carregarQuestoes() {
-    return [
-      _QuestaoItemBanco(
-        disciplina: 'Matemática',
-        dificuldade: 'Fácil',
-        questao: Questao(
-          id: 'q-mat-1',
-          enunciado: 'Qual é o resultado de 3² + 4²?',
-          indiceAlternativaCorreta: 2,
-          alternativas: [
-            Alternativa(texto: '9', ordem: 0),
-            Alternativa(texto: '12', ordem: 1),
-            Alternativa(texto: '25', ordem: 2),
-            Alternativa(texto: '49', ordem: 3),
-          ],
-        ),
-      ),
-      _QuestaoItemBanco(
-        disciplina: 'Matemática',
-        dificuldade: 'Média',
-        questao: Questao(
-          id: 'q-mat-2',
-          enunciado: 'Um triângulo com lados 3, 4 e 5 é...',
-          indiceAlternativaCorreta: 0,
-          alternativas: [
-            Alternativa(texto: 'Retângulo', ordem: 0),
-            Alternativa(texto: 'Equilátero', ordem: 1),
-            Alternativa(texto: 'Isósceles', ordem: 2),
-            Alternativa(texto: 'Obtusângulo', ordem: 3),
-          ],
-        ),
-      ),
-      _QuestaoItemBanco(
-        disciplina: 'Matemática',
-        dificuldade: 'Fácil',
-        questao: Questao(
-          id: 'q-mat-3',
-          enunciado: 'Resolva a equação 2x + 6 = 18',
-          indiceAlternativaCorreta: 1,
-          alternativas: [
-            Alternativa(texto: 'x = 4', ordem: 0),
-            Alternativa(texto: 'x = 6', ordem: 1),
-            Alternativa(texto: 'x = 8', ordem: 2),
-            Alternativa(texto: 'x = 12', ordem: 3),
-          ],
-        ),
-      ),
-      _QuestaoItemBanco(
-        disciplina: 'Matemática',
-        dificuldade: 'Difícil',
-        questao: Questao(
-          id: 'q-mat-4',
-          enunciado: 'Qual o valor da diagonal de um cubo de aresta 2?',
-          indiceAlternativaCorreta: 2,
-          alternativas: [
-            Alternativa(texto: '2√2', ordem: 0),
-            Alternativa(texto: '4', ordem: 1),
-            Alternativa(texto: '2√3', ordem: 2),
-            Alternativa(texto: '3√2', ordem: 3),
-          ],
-        ),
-      ),
-      _QuestaoItemBanco(
-        disciplina: 'Ciências',
-        dificuldade: 'Média',
-        questao: Questao(
-          id: 'q-cie-1',
-          enunciado: 'Qual processo as plantas usam para produzir alimento?',
-          indiceAlternativaCorreta: 1,
-          alternativas: [
-            Alternativa(texto: 'Respiração', ordem: 0),
-            Alternativa(texto: 'Fotossíntese', ordem: 1),
-            Alternativa(texto: 'Fermentação', ordem: 2),
-            Alternativa(texto: 'Osmose', ordem: 3),
-          ],
-        ),
-      ),
-      _QuestaoItemBanco(
-        disciplina: 'História',
-        dificuldade: 'Fácil',
-        questao: Questao(
-          id: 'q-his-1',
-          enunciado: 'Em que ano ocorreu a Independência do Brasil?',
-          indiceAlternativaCorreta: 3,
-          alternativas: [
-            Alternativa(texto: '1808', ordem: 0),
-            Alternativa(texto: '1815', ordem: 1),
-            Alternativa(texto: '1889', ordem: 2),
-            Alternativa(texto: '1822', ordem: 3),
-          ],
-        ),
-      ),
-    ];
   }
 }
