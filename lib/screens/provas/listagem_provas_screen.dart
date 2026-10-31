@@ -8,6 +8,8 @@ import 'package:app_mobile/screens/questoes/banco_questoes.dart';
 import 'package:app_mobile/screens/resultados/lista_resultados_screen.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
 import 'package:app_mobile/data/provas_repository.dart';
+import 'package:app_mobile/utils/mensagem_erro.dart';
+import 'package:app_mobile/widgets/estado_tela.dart';
 
 import 'criar_prova_modal.dart';
 
@@ -127,6 +129,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
 
   late List<ProvaItemVisual> _provas;
   bool _carregando = true;
+  bool _salvando = false;
   String? _erroCarregamento;
 
   @override
@@ -176,7 +179,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _erroCarregamento = 'Não foi possível carregar as provas.';
+        _erroCarregamento = mensagemErro(e);
         _carregando = false;
       });
     }
@@ -219,6 +222,12 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
         child: Column(
           children: [
             _buildTopo(),
+            if (_salvando)
+              const LinearProgressIndicator(
+                minHeight: 2,
+                color: _Cores.teal,
+                backgroundColor: Colors.transparent,
+              ),
             const SizedBox(height: 12),
 
             Expanded(
@@ -242,40 +251,17 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
 
                   _buildFiltrosSituacao(),
                   if (_carregando)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: _Cores.teal,
-                        ),
-                      ),
-                    )
+                    const EstadoTela.carregando(titulo: 'Carregando provas...')
                   else if (_erroCarregamento != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Column(
-                        children: [
-                          const Icon(
-                            Icons.cloud_off_rounded,
-                            size: 40,
-                            color: _Cores.grayLine,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _erroCarregamento!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: _Cores.subtitleColor,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          OutlinedButton(
-                            onPressed: _carregarProvas,
-                            child: const Text('Tentar novamente'),
-                          ),
-                        ],
-                      ),
+                    EstadoTela.erro(
+                      mensagem: _erroCarregamento!,
+                      onTentarNovamente: _carregarProvas,
+                    )
+                  else if (_provas.isEmpty)
+                    const EstadoTela.vazio(
+                      titulo: 'Nenhuma prova criada',
+                      mensagem: 'Toque em "Nova prova" para montar a primeira.',
+                      icone: Icons.description_outlined,
                     )
                   else if (filtradas.isEmpty)
                       _buildEstadoVazio()
@@ -856,6 +842,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
     if (indice == -1) return;
 
+    setState(() => _salvando = true);
     try {
       await ProvasRepository.instance.atualizar(prova);
       if (!mounted) return;
@@ -883,10 +870,12 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não foi possível atualizar a prova no Firestore.'),
+        SnackBar(
+          content: Text('Não foi possível atualizar a prova. ${mensagemErro(e)}'),
         ),
       );
+    } finally {
+      if (mounted) setState(() => _salvando = false);
     }
   }
 
@@ -908,6 +897,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       status: status,
     );
 
+    setState(() => _salvando = true);
     try {
       await ProvasRepository.instance.criar(prova);
       if (!mounted) return;
@@ -950,10 +940,12 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não foi possível salvar a prova no Firestore.'),
+        SnackBar(
+          content: Text('Não foi possível salvar a prova. ${mensagemErro(e)}'),
         ),
       );
+    } finally {
+      if (mounted) setState(() => _salvando = false);
     }
   }
 
