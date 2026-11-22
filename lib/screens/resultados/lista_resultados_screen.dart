@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 
 import 'package:app_mobile/data/resultados_repository.dart';
 import 'package:app_mobile/models/prova.dart';
@@ -6,6 +7,7 @@ import 'package:app_mobile/models/resultado.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
 import 'package:app_mobile/utils/correcao.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
+import 'package:app_mobile/utils/relatorio_pdf.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
 
 class _Cores {
@@ -75,6 +77,21 @@ class _ListaResultadosScreenState extends State<ListaResultadosScreen> {
 
   String _formatarNota(double nota) =>
       nota.toStringAsFixed(1).replaceAll('.', ',');
+
+  Future<void> _exportarRelatorio() async {
+    try {
+      final bytes = await gerarPdfRelatorio(widget.prova, _resultados);
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename: 'relatorio_${widget.prova.id}.pdf',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível gerar o relatório.')),
+      );
+    }
+  }
 
   void _abrirResultado(Resultado resultado) {
     Navigator.of(context).push(
@@ -169,6 +186,12 @@ class _ListaResultadosScreenState extends State<ListaResultadosScreen> {
               ],
             ),
           ),
+          if (_resultados.isNotEmpty)
+            IconButton(
+              tooltip: 'Exportar relatório (PDF)',
+              onPressed: _exportarRelatorio,
+              icon: const Icon(Icons.picture_as_pdf_outlined, color: _Cores.teal),
+            ),
         ],
       ),
     );

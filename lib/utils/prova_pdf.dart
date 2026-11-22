@@ -10,12 +10,54 @@ const String prefixoQr = 'provaleve:';
 
 String conteudoQr(Prova prova) => '$prefixoQr${prova.id}';
 
-/// Devolve o id da prova guardado no QRCode, ou `null` se o código não for do ProvaLeve.
-String? provaIdDoQr(String? texto) {
-  if (texto == null || !texto.startsWith(prefixoQr)) return null;
-  final id = texto.substring(prefixoQr.length).trim();
-  return id.isEmpty ? null : id;
+/// Conteúdo lido de um QRCode do ProvaLeve.
+/// - QRCode da prova (no PDF): só o [provaId], com [respostas] nulo.
+/// - QRCode do gabarito do aluno: [provaId], nome do [aluno] e [respostas]
+///   (índice da alternativa marcada em cada questão, -1 para em branco).
+class GabaritoQr {
+  const GabaritoQr({required this.provaId, this.aluno = '', this.respostas});
+
+  final String provaId;
+  final String aluno;
+  final List<int>? respostas;
 }
+
+/// QRCode do gabarito do aluno: `provaleve:<idDaProva>|<nome>|<respostas>`,
+/// onde as respostas são letras (A, B, C...) e `-` para questão em branco.
+String conteudoQrGabarito(
+  Prova prova, {
+  required String aluno,
+  required List<int> respostas,
+}) {
+  final nome = aluno.replaceAll('|', ' ').trim();
+  final letras = respostas
+      .map((r) => r < 0 ? '-' : String.fromCharCode(65 + r))
+      .join();
+  return '$prefixoQr${prova.id}|$nome|$letras';
+}
+
+/// Lê o texto de um QRCode. Devolve `null` se o código não for do ProvaLeve.
+GabaritoQr? lerQr(String? texto) {
+  if (texto == null || !texto.startsWith(prefixoQr)) return null;
+  final partes = texto.substring(prefixoQr.length).split('|');
+  final id = partes.first.trim();
+  if (id.isEmpty) return null;
+  List<int>? respostas;
+  if (partes.length >= 3) {
+    respostas = [
+      for (final letra in partes[2].trim().split(''))
+        letra == '-' ? -1 : letra.toUpperCase().codeUnitAt(0) - 65,
+    ];
+  }
+  return GabaritoQr(
+    provaId: id,
+    aluno: partes.length >= 2 ? partes[1].trim() : '',
+    respostas: respostas,
+  );
+}
+
+/// Devolve o id da prova guardado no QRCode, ou `null` se o código não for do ProvaLeve.
+String? provaIdDoQr(String? texto) => lerQr(texto)?.provaId;
 
 String nomeArquivoPdf(Prova prova) {
   final nome = prova.titulo
@@ -60,6 +102,11 @@ Future<Uint8List> gerarPdfProva(Prova prova) async {
                     'Disciplina: ${prova.disciplina}',
                     style: const pw.TextStyle(fontSize: 12),
                   ),
+                  if (prova.turmaNome != null)
+                    pw.Text(
+                      'Turma: ${prova.turmaNome}',
+                      style: const pw.TextStyle(fontSize: 12),
+                    ),
                   pw.SizedBox(height: 12),
                   pw.Text(
                     'Nome: ______________________________________________',

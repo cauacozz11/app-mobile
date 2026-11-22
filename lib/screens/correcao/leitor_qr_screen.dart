@@ -3,8 +3,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'package:app_mobile/utils/prova_pdf.dart';
 
-/// Lê o QRCode do gabarito da prova e devolve, no `pop`, o id da prova lida.
-/// Devolve `null` se o professor voltar sem ler nada.
+/// Lê o QRCode do gabarito e devolve, no `pop`, o texto lido (use `lerQr` para
+/// interpretá-lo). Devolve `null` se o professor voltar sem ler nada.
 class LeitorQrScreen extends StatefulWidget {
   const LeitorQrScreen({super.key});
 
@@ -29,10 +29,10 @@ class _LeitorQrScreenState extends State<LeitorQrScreen> {
   void _aoDetectar(BarcodeCapture captura) {
     if (_lido) return;
     for (final codigo in captura.barcodes) {
-      final id = provaIdDoQr(codigo.rawValue);
-      if (id != null) {
+      final texto = codigo.rawValue;
+      if (lerQr(texto) != null) {
         _lido = true;
-        Navigator.of(context).pop(id);
+        Navigator.of(context).pop(texto);
         return;
       }
     }
