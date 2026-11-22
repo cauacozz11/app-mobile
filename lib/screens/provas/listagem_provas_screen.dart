@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/resultado.dart';
 import 'package:app_mobile/screens/correcao/correcao_prova_screen.dart';
+import 'package:app_mobile/screens/correcao/leitor_qr_screen.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
 import 'package:app_mobile/screens/questoes/banco_questoes.dart';
 import 'package:app_mobile/screens/resultados/lista_resultados_screen.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
 import 'package:app_mobile/data/provas_repository.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
+import 'package:app_mobile/utils/prova_pdf.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
 
 import 'criar_prova_modal.dart';
@@ -235,14 +238,35 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                 controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
                 children: [
-                  const Text(
-                    'Minhas provas',
-                    style: TextStyle(
-                      color: _Cores.teal,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.4,
-                    ),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Minhas provas',
+                          style: TextStyle(
+                            color: _Cores.teal,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _Cores.teal,
+                          side: const BorderSide(color: _Cores.teal),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.qr_code_scanner, size: 20),
+                        label: const Text(
+                          'Ler QRCode',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        onPressed: _lerQrCode,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
 
@@ -958,6 +982,39 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
+  Future<void> _exportarPdf(ProvaItemVisual item) async {
+    try {
+      final bytes = await gerarPdfProva(item.prova);
+      await Printing.sharePdf(bytes: bytes, filename: nomeArquivoPdf(item.prova));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível gerar o PDF da prova.')),
+      );
+    }
+  }
+
+  Future<void> _lerQrCode() async {
+    final provaId = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (context) => const LeitorQrScreen()),
+    );
+    if (!mounted || provaId == null) return;
+
+    final indice = _provas.indexWhere((p) => p.prova.id == provaId);
+    final mensagem = indice == -1
+        ? 'Essa prova não foi encontrada nas suas provas.'
+        : _provas[indice].status == StatusProva.rascunho
+        ? 'Essa prova ainda é um rascunho e não pode ser corrigida.'
+        : null;
+    if (mensagem != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensagem)),
+      );
+      return;
+    }
+    await _abrirCorrecao(_provas[indice]);
+  }
+
   Future<void> _abrirCorrecao(ProvaItemVisual item) async {
     final resultado = await Navigator.of(context).push<Resultado>(
       MaterialPageRoute(
@@ -1077,6 +1134,29 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
               const SizedBox(height: 10),
             ],
             if (item.status != StatusProva.rascunho) ...[
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _Cores.teal,
+                    side: const BorderSide(color: _Cores.teal),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
+                  label: const Text(
+                    'Exportar PDF (prova e gabarito)',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _exportarPdf(item);
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
