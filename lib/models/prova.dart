@@ -8,6 +8,8 @@ class Prova {
   final List<Questao> questoes;
   final DateTime dataCriacao;
   final String status;
+  final String? turmaId;
+  final String? turmaNome;
 
   Prova({
     required this.id,
@@ -16,6 +18,8 @@ class Prova {
     required this.questoes,
     required this.dataCriacao,
     this.status = 'rascunho',
+    this.turmaId,
+    this.turmaNome,
   });
 
   Map<String, dynamic> toMap() => {
@@ -25,6 +29,8 @@ class Prova {
     'questoes': questoes.map((q) => q.toMap()).toList(),
     'dataCriacao': dataCriacao,
     'status': status,
+    'turmaId': turmaId,
+    'turmaNome': turmaNome,
   };
 
   factory Prova.fromMap(Map<String, dynamic> map) => Prova(
@@ -36,6 +42,8 @@ class Prova {
         .toList(),
     dataCriacao: _lerData(map['dataCriacao']),
     status: map['status'] as String? ?? 'rascunho',
+    turmaId: map['turmaId'] as String?,
+    turmaNome: map['turmaNome'] as String?,
   );
 }
 

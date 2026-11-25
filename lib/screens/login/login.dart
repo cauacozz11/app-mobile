@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:app_mobile/utils/validators.dart';
 import 'package:app_mobile/models/sessao.dart';
 import 'package:app_mobile/models/usuario.dart';
+import 'package:app_mobile/screens/login/cadastro_screen.dart';
+import 'package:app_mobile/utils/autenticacao.dart';
 import 'package:app_mobile/screens/splash.dart' show LogoCard, BlobPainter;
 
 import 'mock_usuario.dart';
@@ -32,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _senhaOculta = true;
 
   String? _erroLogin;
+  bool _entrando = false;
 
   @override
   void dispose() {
@@ -40,7 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _entrar() {
+  Future<void> _entrar() async {
+    if (_entrando) return;
     setState(() => _erroLogin = null);
 
     if (!_formKey.currentState!.validate()) return;
@@ -48,17 +52,32 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailCtrl.text.trim().toLowerCase();
     final senha = _senhaCtrl.text;
 
-    Usuario? usuario;
+    Usuario? encontrado;
     for (final u in usuariosMock) {
       if (u.email.toLowerCase() == email && u.senha == senha) {
-        usuario = u;
+        encontrado = u;
         break;
       }
     }
 
-    if (usuario == null) {
-      setState(() => _erroLogin = 'E-mail ou senha inválidos');
-      return;
+    // Usuários de teste entram direto; os demais entram pelo Firebase Authentication.
+    final Usuario usuario;
+    if (encontrado != null) {
+      usuario = encontrado;
+    } else {
+      setState(() => _entrando = true);
+      try {
+        usuario = await Autenticacao.entrar(email, senha);
+      } catch (e) {
+        if (!mounted) return;
+        setState(() {
+          _entrando = false;
+          _erroLogin = Autenticacao.mensagem(e);
+        });
+        return;
+      }
+      if (!mounted) return;
+      setState(() => _entrando = false);
     }
 
     Sessao.entrar(usuario);
@@ -328,7 +347,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(
                           height: 54,
                           child: ElevatedButton(
-                            onPressed: _entrar,
+                            onPressed: _entrando ? null : _entrar,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _Cores.teal,
                               foregroundColor: Colors.white,
@@ -361,12 +380,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 24),
 
-                Text(
-                  'Ainda não possui acesso? Fale com sua instituição.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _Cores.subtitleColor.withValues(alpha: 0.6),
-                    fontSize: 12.5,
+                TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const CadastroScreen(),
+                    ),
+                  ),
+                  style: TextButton.styleFrom(foregroundColor: _Cores.teal),
+                  child: const Text(
+                    'Ainda não tem conta? Criar conta',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],

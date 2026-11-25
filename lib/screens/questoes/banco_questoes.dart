@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:app_mobile/data/questoes_repository.dart';
 import 'package:app_mobile/models/questao.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
+import 'package:app_mobile/screens/turmas/turmas_screen.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
 
@@ -656,6 +657,11 @@ class _BancoQuestoesScreenState extends State<BancoQuestoesScreen> {
               },
             ),
             _buildItemMenu(Icons.menu_book_rounded, 'Questões', true, () {}),
+            _buildItemMenu(Icons.groups_outlined, 'Turmas', false, () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const TurmasScreen()),
+              );
+            }),
             _buildItemMenu(Icons.person_outline, 'Perfil', false,
                 _abrirPerfil),
           ],

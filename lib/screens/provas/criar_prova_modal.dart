@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:app_mobile/data/questoes_repository.dart';
+import 'package:app_mobile/data/turmas_repository.dart';
+import 'package:app_mobile/models/turma.dart';
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/questao.dart';
+import 'package:app_mobile/utils/embaralhar.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
 
@@ -61,6 +64,10 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
   final TextEditingController _buscaController = TextEditingController();
 
   String _disciplinaSelecionada = 'Matemática';
+  bool _embaralharQuestoes = false;
+  List<Turma> _turmas = [];
+  String? _turmaId;
+  bool _embaralharAlternativas = false;
   String _buscaQuestoes = '';
   String _filtroDificuldade = 'Todas';
 
@@ -84,10 +91,22 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
     if (prova != null) {
       _tituloController.text = prova.titulo;
       _disciplinaSelecionada = prova.disciplina;
+      _turmaId = prova.turmaId;
       _questoesSelecionadasIds.addAll(prova.questoes.map((q) => q.id));
       _questoesDisponiveis = _mesclarComProva(const []);
     }
     _carregarQuestoes();
+    _carregarTurmas();
+  }
+
+  Future<void> _carregarTurmas() async {
+    try {
+      final turmas = await TurmasRepository.instance.listar();
+      if (!mounted) return;
+      setState(() => _turmas = turmas);
+    } catch (_) {
+      // Sem turmas a prova continua podendo ser criada, só não é associada a uma turma.
+    }
   }
 
   Future<void> _carregarQuestoes() async {
@@ -196,6 +215,16 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
         .map((q) => q.questao)
         .toList();
 
+    final questoesFinais = embaralharQuestoes(
+      questoes,
+      ordemQuestoes: _embaralharQuestoes,
+      alternativas: _embaralharAlternativas,
+    );
+
+    final turma = _turmas
+        .where((t) => t.id == _turmaId && t.disciplina == _disciplinaSelecionada)
+        .firstOrNull;
+
     final novaProva = Prova(
       id:
           widget.provaInicial?.id ??
@@ -203,7 +232,9 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
       titulo: titulo,
       disciplina: _disciplinaSelecionada,
       dataCriacao: widget.provaInicial?.dataCriacao ?? DateTime.now(),
-      questoes: questoes,
+      questoes: questoesFinais,
+      turmaId: turma?.id,
+      turmaNome: turma?.nome,
     );
 
     Navigator.of(context)
@@ -675,7 +706,54 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 12),
+            Builder(
+              builder: (context) {
+                final turmasDaDisciplina = _turmas
+                    .where((t) => t.disciplina == _disciplinaSelecionada)
+                    .toList();
+                final valor = turmasDaDisciplina.any((t) => t.id == _turmaId)
+                    ? _turmaId
+                    : null;
+                return DropdownButtonFormField<String?>(
+                  initialValue: valor,
+                  key: ValueKey('turma-$_disciplinaSelecionada-${turmasDaDisciplina.length}'),
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Turma (opcional)',
+                    isDense: true,
+                  ),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Sem turma'),
+                    ),
+                    for (final t in turmasDaDisciplina)
+                      DropdownMenuItem<String?>(value: t.id, child: Text(t.nome)),
+                  ],
+                  onChanged: (v) => setState(() => _turmaId = v),
+                );
+              },
+            ),
+            CheckboxListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              activeColor: _Cores.teal,
+              title: const Text('Embaralhar a ordem das questões'),
+              value: _embaralharQuestoes,
+              onChanged: (v) => setState(() => _embaralharQuestoes = v ?? false),
+            ),
+            CheckboxListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              activeColor: _Cores.teal,
+              title: const Text('Embaralhar as alternativas'),
+              value: _embaralharAlternativas,
+              onChanged: (v) =>
+                  setState(() => _embaralharAlternativas = v ?? false),
+            ),
+            const SizedBox(height: 4),
             Row(
               children: [
                 Expanded(

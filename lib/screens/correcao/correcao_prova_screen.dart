@@ -92,6 +92,8 @@ class _CorrecaoProvaScreenState extends State<CorrecaoProvaScreen> {
       questoes: prova.questoes,
       dataCriacao: prova.dataCriacao,
       status: 'corrigida',
+      turmaId: prova.turmaId,
+      turmaNome: prova.turmaNome,
     );
   }
 

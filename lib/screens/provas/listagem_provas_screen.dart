@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/resultado.dart';
 import 'package:app_mobile/screens/correcao/correcao_prova_screen.dart';
+import 'package:app_mobile/screens/correcao/gabarito_aluno_screen.dart';
+import 'package:app_mobile/screens/correcao/leitor_qr_screen.dart';
+import 'package:app_mobile/data/resultados_repository.dart';
+import 'package:app_mobile/utils/correcao.dart';
 import 'package:app_mobile/screens/perfil/perfil_screen.dart';
 import 'package:app_mobile/screens/questoes/banco_questoes.dart';
 import 'package:app_mobile/screens/resultados/lista_resultados_screen.dart';
 import 'package:app_mobile/screens/resultados/resultado_prova_screen.dart';
+import 'package:app_mobile/screens/turmas/turmas_screen.dart';
+import 'package:app_mobile/screens/provas/visualizar_prova_screen.dart';
 import 'package:app_mobile/data/provas_repository.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
+import 'package:app_mobile/utils/prova_pdf.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
 
 import 'criar_prova_modal.dart';
@@ -235,14 +243,35 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                 controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
                 children: [
-                  const Text(
-                    'Minhas provas',
-                    style: TextStyle(
-                      color: _Cores.teal,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.4,
-                    ),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Minhas provas',
+                          style: TextStyle(
+                            color: _Cores.teal,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _Cores.teal,
+                          side: const BorderSide(color: _Cores.teal),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.qr_code_scanner, size: 20),
+                        label: const Text(
+                          'Ler QRCode',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        onPressed: () => _lerQrCode(),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
 
@@ -780,6 +809,11 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                 ),
               );
             }),
+            _buildItemMenu(Icons.groups_outlined, 'Turmas', false, () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const TurmasScreen()),
+              );
+            }),
             _buildItemMenu(Icons.person_outline, 'Perfil', false, _abrirPerfil),
           ],
         ),
@@ -835,6 +869,8 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       questoes: provaOriginal.questoes,
       dataCriacao: provaOriginal.dataCriacao,
       status: status,
+      turmaId: provaOriginal.turmaId,
+      turmaNome: provaOriginal.turmaNome,
     );
 
     final indice = _provas.indexWhere(
@@ -895,6 +931,8 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       questoes: provaOriginal.questoes,
       dataCriacao: provaOriginal.dataCriacao,
       status: status,
+      turmaId: provaOriginal.turmaId,
+      turmaNome: provaOriginal.turmaNome,
     );
 
     setState(() => _salvando = true);
@@ -958,6 +996,112 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     );
   }
 
+  Future<void> _exportarPdf(ProvaItemVisual item) async {
+    try {
+      final bytes = await gerarPdfProva(item.prova);
+      await Printing.sharePdf(bytes: bytes, filename: nomeArquivoPdf(item.prova));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível gerar o PDF da prova.')),
+      );
+    }
+  }
+
+  /// Lê o QRCode do gabarito. Se o código traz as respostas do aluno, corrige
+  /// sozinho e mostra a nota; se traz só a prova, abre a correção manual.
+  /// Com [prova], só aceita QRCode dessa prova.
+  Future<void> _lerQrCode({ProvaItemVisual? prova}) async {
+    final texto = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (context) => const LeitorQrScreen()),
+    );
+    final qr = lerQr(texto);
+    if (!mounted || qr == null) return;
+
+    final indice = _provas.indexWhere((p) => p.prova.id == qr.provaId);
+    final mensagem = prova != null && qr.provaId != prova.prova.id
+        ? 'Esse QRCode é de outra prova.'
+        : indice == -1
+        ? 'Essa prova não foi encontrada nas suas provas.'
+        : _provas[indice].status == StatusProva.rascunho
+        ? 'Essa prova ainda é um rascunho e não pode ser corrigida.'
+        : null;
+    if (mensagem != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensagem)),
+      );
+      return;
+    }
+
+    final item = _provas[indice];
+    if (qr.respostas == null) {
+      await _abrirCorrecao(item);
+    } else {
+      await _corrigirAutomatico(item, qr);
+    }
+  }
+
+  Future<void> _corrigirAutomatico(ProvaItemVisual item, GabaritoQr qr) async {
+    final total = item.prova.questoes.length;
+    final marcadas = qr.respostas!;
+    final respostas = [
+      for (var i = 0; i < total; i++) i < marcadas.length ? marcadas[i] : semResposta,
+    ];
+    final correcao = corrigirProva(item.prova, respostas);
+    final resultado = Resultado(
+      id: 'res-${item.prova.id}-${DateTime.now().millisecondsSinceEpoch}',
+      provaId: item.prova.id,
+      nomeAluno: qr.aluno,
+      respostasMarcadas: respostas,
+      nota: correcao.nota,
+    );
+    final prova = Prova(
+      id: item.prova.id,
+      titulo: item.prova.titulo,
+      disciplina: item.prova.disciplina,
+      questoes: item.prova.questoes,
+      dataCriacao: item.prova.dataCriacao,
+      status: 'corrigida',
+      turmaId: item.prova.turmaId,
+      turmaNome: item.prova.turmaNome,
+    );
+
+    setState(() => _salvando = true);
+    try {
+      await ResultadosRepository.instance.criar(resultado);
+      if (item.prova.status != 'corrigida') {
+        await ProvasRepository.instance.atualizar(prova);
+      }
+      if (!mounted) return;
+      final indice = _provas.indexWhere((p) => p.prova.id == prova.id);
+      if (indice != -1) {
+        setState(() {
+          _provas[indice] = ProvaItemVisual(
+            prova: prova,
+            status: StatusProva.corrigida,
+            dataFormatada: item.dataFormatada,
+            totalQuestoes: item.totalQuestoes,
+          );
+        });
+      }
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              ResultadoProvaScreen(prova: prova, resultado: resultado),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar a correção. ${mensagemErro(e)}'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _salvando = false);
+    }
+  }
+
   Future<void> _abrirCorrecao(ProvaItemVisual item) async {
     final resultado = await Navigator.of(context).push<Resultado>(
       MaterialPageRoute(
@@ -973,6 +1117,8 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
       questoes: item.prova.questoes,
       dataCriacao: item.prova.dataCriacao,
       status: 'corrigida',
+      turmaId: item.prova.turmaId,
+      turmaNome: item.prova.turmaNome,
     );
     final indice = _provas.indexWhere((p) => p.prova.id == prova.id);
     if (indice != -1) {
@@ -997,13 +1143,15 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
   void _abrirDetalhesProva(ProvaItemVisual item) {
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: _Cores.cardWhite,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => Padding(
         padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1035,7 +1183,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Disciplina: ${item.prova.disciplina}',
+              'Disciplina: ${item.prova.disciplina}${item.prova.turmaNome == null ? '' : ' · Turma: ${item.prova.turmaNome}'}',
               style: const TextStyle(
                 color: _Cores.subtitleColor,
                 fontSize: 14,
@@ -1051,6 +1199,59 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
               ),
             ),
             const SizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _Cores.teal,
+                  side: const BorderSide(color: _Cores.teal),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+                icon: const Icon(Icons.visibility_outlined),
+                label: const Text(
+                  'Ver questões da prova',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          VisualizarProvaScreen(prova: item.prova),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (item.status == StatusProva.pronta) ...[
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _Cores.teal,
+                    side: const BorderSide(color: _Cores.teal),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text(
+                    'Editar prova',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _editarRascunho(item);
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             if (item.status == StatusProva.corrigida) ...[
               SizedBox(
                 width: double.infinity,
@@ -1061,7 +1262,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                   icon: const Icon(Icons.bar_chart_rounded),
                   label: const Text(
@@ -1074,9 +1275,32 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
             ],
             if (item.status != StatusProva.rascunho) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _Cores.teal,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text(
+                    'Corrigir lendo o QRCode do gabarito',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _lerQrCode(prova: item);
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -1086,7 +1310,58 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Icon(Icons.qr_code_2),
+                  label: const Text(
+                    'Gerar gabarito do aluno (QRCode)',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            GabaritoAlunoScreen(prova: item.prova),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _Cores.teal,
+                    side: const BorderSide(color: _Cores.teal),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
+                  label: const Text(
+                    'Exportar PDF (prova e gabarito)',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _exportarPdf(item);
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _Cores.teal,
+                    side: const BorderSide(color: _Cores.teal),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                   icon: const Icon(Icons.fact_check_outlined),
                   label: Text(
@@ -1101,7 +1376,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
             ],
             SizedBox(
               width: double.infinity,
@@ -1114,13 +1389,14 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                 ),
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('Fechar'),
               ),
             ),
           ],
+        ),
         ),
       ),
     );
