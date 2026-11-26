@@ -10,8 +10,8 @@ Provas mais simples. Tempo para ensinar.
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 
-![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-yellow?style=for-the-badge)
-![Entrega](https://img.shields.io/badge/Entrega-N2-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Conclu%C3%ADdo-brightgreen?style=for-the-badge)
+![Entrega](https://img.shields.io/badge/Entrega-Final%20(N3)-blue?style=for-the-badge)
 ![Licença](https://img.shields.io/badge/Licen%C3%A7a-MIT-green?style=for-the-badge)
 
 </div>
@@ -51,6 +51,12 @@ Provas mais simples. Tempo para ensinar.
   * [6.7 Resultado da Prova](#67-resultado-da-prova)
   * [6.8 Correção da Prova](#68-correção-da-prova)
   * [6.9 Lista de Resultados](#69-lista-de-resultados)
+  * [6.10 Criar Conta](#610-criar-conta)
+  * [6.11 Turmas e Disciplinas](#611-turmas-e-disciplinas)
+  * [6.12 Visualizar Prova](#612-visualizar-prova)
+  * [6.13 PDF da Prova e Gabarito com QRCode](#613-pdf-da-prova-e-gabarito-com-qrcode)
+  * [6.14 Leitura do QRCode](#614-leitura-do-qrcode)
+  * [6.15 Gabarito do Aluno](#615-gabarito-do-aluno)
 * [7. Fluxo Principal do Sistema](#7-fluxo-principal-do-sistema)
 * [8. Público-Alvo](#8-público-alvo)
 * [9. Interface e Experiência de Uso](#9-interface-e-experiência-de-uso)
@@ -62,6 +68,7 @@ Provas mais simples. Tempo para ensinar.
 * [13. Estrutura de Pastas](#13-estrutura-de-pastas)
 * [14. Modelo de Dados](#14-modelo-de-dados)
 * [15. Backlog de Atividades da N2](#15-backlog-de-atividades-da-n2)
+* [16. Entrega Final (N3)](#16-entrega-final-n3)
 
 ---
 
@@ -102,17 +109,21 @@ A correção automatizada foi identificada pelo cliente como a funcionalidade ma
 As funcionalidades dentro do escopo do projeto são:
 
 * Abertura do aplicativo;
-* Login do professor;
+* Cadastro e login do professor (Firebase Authentication);
+* Cadastro de turmas e disciplinas;
 * Gerenciamento das provas;
-* Criação de provas;
+* Criação de provas, com embaralhamento de questões e de alternativas;
+* Visualização e edição da prova gerada;
 * Banco de questões;
 * Cadastro de novas questões;
 * Definição do gabarito;
-* Correção automatizada;
+* Exportação da prova em PDF, com o gabarito e o QRCode em página separada;
+* Correção pela leitura do QRCode;
 * Visualização dos resultados;
 * Visualização de acertos e erros;
 * Visualização das respostas marcadas;
-* Consulta detalhada das questões corrigidas.
+* Consulta detalhada das questões corrigidas;
+* Relatório da prova corrigida em PDF.
 
 Essas funcionalidades foram definidas nos wireframes do aplicativo e implementadas no app Flutter.
 
@@ -122,7 +133,6 @@ Foram levantadas também algumas funcionalidades adicionais que podem ser incorp
 
 * Importação da lista de alunos;
 * Geração de provas individualizadas por aluno;
-* Geração de relatório de notas;
 * Exportação dos resultados para Excel;
 * Edição do layout da prova gerada.
 
@@ -132,7 +142,6 @@ Essas funcionalidades foram apresentadas pelo cliente como sugestões adicionais
 
 Não fazem parte do escopo inicial:
 
-* Cadastro livre de professores pelo aplicativo;
 * Gerenciamento acadêmico completo da instituição;
 * Criação de conteúdo educacional;
 * Correção de questões discursivas;
@@ -144,7 +153,7 @@ Não fazem parte do escopo inicial:
 
 | Código   | Requisito | Situação |
 | -------- | --------- | -------- |
-| **RF01** | O sistema deve permitir que o professor realize login utilizando e-mail e senha. | Atendido (usuários de teste locais; autenticação pelo Firebase não implementada) |
+| **RF01** | O sistema deve permitir que o professor realize login utilizando e-mail e senha. | Atendido (Firebase Authentication) |
 | **RF02** | O sistema deve permitir a recuperação de senha. | Parcial |
 | **RF03** | O sistema deve permitir visualizar as provas do professor. | Atendido (Firestore) |
 | **RF04** | O sistema deve permitir pesquisar provas. | Atendido (Firestore) |
@@ -159,25 +168,33 @@ Não fazem parte do escopo inicial:
 | **RF13** | O sistema deve permitir duplicar questões. | Atendido (Firestore) |
 | **RF14** | O sistema deve permitir excluir questões. | Atendido (Firestore) |
 | **RF15** | O sistema deve permitir salvar uma questão como rascunho. | Atendido (Firestore) |
-| **RF16** | O sistema deve realizar a correção automatizada das provas. | Atendido (correção feita no aplicativo a partir das respostas marcadas pelo professor; a leitura por QR Code ainda não existe) |
+| **RF16** | O sistema deve realizar a correção automatizada das provas. | Atendido (correção pela leitura do QRCode, com a nota calculada e salva no Firestore) |
 | **RF17** | O sistema deve permitir que o professor visualize a nota obtida pelo aluno. | Atendido (Firestore) |
 | **RF18** | O sistema deve permitir que o professor visualize a quantidade de acertos e erros do aluno. | Atendido (Firestore) |
 | **RF19** | O sistema deve permitir que o professor visualize a resposta marcada pelo aluno. | Atendido (Firestore) |
 | **RF20** | O sistema deve permitir que o professor visualize a alternativa correta nas questões em que o aluno errou. | Atendido (Firestore) |
 | **RF21** | O sistema deve permitir que o professor visualize a correção detalhada da prova do aluno. | Atendido (Firestore) |
 | **RF22** | O sistema deve permitir compartilhar ou exportar o resultado. | Atendido (compartilhamento com share_plus) |
+| **RF23** | O sistema deve permitir que o professor crie uma conta (cadastro). | Atendido (Firebase Authentication e coleção `usuarios`) |
+| **RF24** | O sistema deve permitir cadastrar turmas e disciplinas. | Atendido (Firestore) |
+| **RF25** | O sistema deve permitir associar a prova a uma turma. | Atendido (Firestore) |
+| **RF26** | O sistema deve permitir embaralhar as questões e as alternativas ao gerar a prova. | Atendido |
+| **RF27** | O sistema deve permitir visualizar e editar a prova gerada. | Atendido (Firestore) |
+| **RF28** | O sistema deve exportar a prova em PDF, com o gabarito e o QRCode em página separada das questões. | Atendido |
+| **RF29** | O sistema deve corrigir a prova pela leitura do QRCode, exibindo e salvando a nota do aluno. | Atendido (Firestore) |
+| **RF30** | O sistema deve mostrar o status da prova após as correções e gerar o relatório. | Atendido (status "Corrigida" e relatório em PDF) |
 
-Os requisitos foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente. A coluna Situação mostra o que já está implementado no aplicativo.
+Os requisitos RF01 a RF22 foram definidos a partir das funcionalidades descritas nos wireframes e das necessidades apresentadas pelo cliente. Os requisitos RF23 a RF30 vieram das funcionalidades pedidas pelo cliente para a entrega final. A coluna Situação mostra o que está implementado no aplicativo.
 
 Legenda da situação:
 
-* **Atendido (Firestore):** a funcionalidade está implementada e grava ou lê os dados no Firestore. As provas (RF03 a RF06) usam o `ProvasRepository` e as questões (RF07 e RF08 a RF15) usam o `QuestoesRepository`;
+* **Atendido (Firestore):** a funcionalidade está implementada e grava ou lê os dados no Firestore. As provas (RF03 a RF06) usam o `ProvasRepository`, as questões (RF07 e RF08 a RF15) usam o `QuestoesRepository`, as turmas (RF24 e RF25) usam o `TurmasRepository` e os resultados (RF17 a RF21 e RF29) usam o `ResultadosRepository`;
+* **Atendido (Firebase Authentication):** a conta do professor é criada e validada pelo Firebase Authentication, e o perfil fica na coleção `usuarios`;
 * **Atendido (compartilhamento com share_plus):** o resultado é compartilhado pelo menu de compartilhamento do celular;
-* **Atendido (usuários de teste locais):** o login funciona com os usuários de teste do aplicativo, sem autenticação pelo Firebase;
 * **Parcial:** existe apenas a interface, sem a lógica completa;
 * **Não atendido:** ainda não foi implementado.
 
-Observação: a correção automatizada (RF16) é feita pelo professor. Na tela de correção, ele informa o nome do aluno e marca a alternativa escolhida em cada questão; o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados` e muda a prova para "corrigida". Ainda falta a leitura do QR Code e do gabarito da prova do aluno, que dispensaria a marcação manual das respostas. A tela de resultado (RF17 a RF21) é voltada ao professor, e não ao aluno.
+Observação sobre a correção (RF16 e RF29): o PDF da prova traz um QRCode com o identificador da prova. Ao ler esse QRCode, o aplicativo reconhece a prova e abre a tela de correção, onde o professor informa o nome do aluno e marca a alternativa escolhida em cada questão. O aplicativo também gera o **gabarito do aluno**: o aluno marca as respostas no celular e a tela gera um QRCode que já leva o nome e as respostas; ao ler esse QRCode, a correção é feita sozinha, sem marcação manual. Nos dois casos, o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados`, muda a prova para "corrigida" e mostra a nota na tela. A tela de resultado (RF17 a RF21) é voltada ao professor, e não ao aluno.
 
 Observação sobre o Firestore e os dados locais: o banco de questões lista, cria, edita, duplica e exclui as questões no Firestore (RF08 a RF15), e a lista é carregada do banco sempre que a tela é aberta. A tela de criar prova (RF07) lista as questões publicadas do banco (sem os rascunhos) para o professor escolher. Os resultados (RF17 a RF21) vêm do Firestore: ao tocar em "Ver resultado" ou "Visualizar Resultados" em uma prova corrigida, o aplicativo lista os resultados gravados na coleção `resultados` (`listarPorProva`), com a média da turma e a nota e os acertos de cada aluno, e a tela de resultado mostra o nome do aluno, as respostas marcadas e a correção detalhada. Recuperar senha (RF02) mostra apenas um aviso orientando o professor a falar com a instituição.
 
@@ -190,11 +207,11 @@ Observação sobre o Firestore e os dados locais: o banco de questões lista, cr
 | **RNF01** | A interface deve ser simples e fácil de utilizar.                                            | Atendido (telas minimalistas, seguindo os wireframes) |
 | **RNF02** | A navegação deve ser lógica e objetiva.                                                      | Atendido (rotas nomeadas, seguindo o fluxo da seção 7) |
 | **RNF03** | As informações devem ser apresentadas de forma clara e organizada.                           | Atendido |
-| **RNF04** | O sistema deve proteger as informações de acesso do professor.                               | Parcial (a senha fica oculta na tela e não é gravada no Firestore; o login ainda usa usuários de teste locais, sem Firebase Authentication) |
+| **RNF04** | O sistema deve proteger as informações de acesso do professor.                               | Atendido (a senha fica oculta na tela, é validada pelo Firebase Authentication e não é gravada no Firestore) |
 | **RNF05** | O resultado da correção deve ser apresentado de forma rápida.                                | Atendido (a nota é calculada no próprio aplicativo, em `lib/utils/correcao.dart`, sem depender de rede) |
 | **RNF06** | A interface deve evitar excesso de elementos visuais.                                        | Atendido |
 | **RNF07** | Os acertos e erros devem possuir identificação visual clara.                                 | Atendido (cores e ícones de certo e errado na tela de resultado) |
-| **RNF08** | Cada professor deve ter acesso somente às suas próprias provas e questões.                   | Atendido (o `professorId` é gravado em cada documento e as consultas são filtradas por ele em `lib/data/firestore_repository.dart`; como o login ainda não usa o Firebase Authentication, as regras de segurança do Firestore só poderão garantir isso depois da autenticação) |
+| **RNF08** | Cada professor deve ter acesso somente às suas próprias provas e questões.                   | Atendido (o `professorId`, que é o uid do Firebase Authentication, é gravado em cada documento e as consultas são filtradas por ele em `lib/data/firestore_repository.dart`) |
 | **RNF09** | O sistema deve apresentar mensagens de erro quando ocorrerem problemas durante uma operação. | Atendido (mensagens de erro em `lib/utils/mensagem_erro.dart`, estados de carregando, vazio e erro em `lib/widgets/estado_tela.dart` e avisos nas telas) |
 | **RNF10** | O aplicativo deve possuir uma interface adequada para dispositivos móveis.                   | Atendido (aplicativo Flutter com layout para celular) |
 
@@ -204,7 +221,7 @@ A preferência do cliente é por uma interface minimalista, lógica, amigável e
 
 ## 6. Telas Principais
 
-O ProvaLeve possui 9 telas principais, definidas nos wireframes e já implementadas em Flutter.
+O ProvaLeve possui 15 telas principais implementadas em Flutter. As telas 6.1 a 6.9 vieram dos wireframes; as telas 6.10 a 6.15 foram criadas para as funcionalidades da entrega final.
 
 ### 6.1 Abertura
 
@@ -237,7 +254,8 @@ Elementos principais:
 * Campo de senha;
 * Exibição/ocultação da senha;
 * Recuperação de senha;
-* Botão "Entrar".
+* Botão "Entrar", que valida o e-mail e a senha no Firebase Authentication;
+* Link "Ainda não tem conta? Criar conta", que abre o cadastro (6.10).
 
 ---
 
@@ -255,9 +273,13 @@ Elementos principais:
 * Lista de provas;
 * Busca;
 * Filtros;
-* Status das provas;
+* Status das provas (rascunho, pronta e corrigida);
 * Acesso aos resultados;
-* Botão para criar uma nova prova.
+* Botão "Ler QRCode", para corrigir uma prova a partir do QRCode;
+* Botão "Nova prova";
+* Menu inferior com Provas, Questões, Turmas e Perfil.
+
+Ao tocar em uma prova, abrem os detalhes com as ações de acordo com o status: "Ver questões da prova", "Editar prova", "Exportar PDF (prova e gabarito)", "Corrigir lendo o QRCode do gabarito", "Gerar gabarito do aluno (QRCode)", "Corrigir prova" e "Visualizar Resultados".
 
 ---
 
@@ -273,11 +295,16 @@ Elementos principais:
 
 * Título da prova;
 * Disciplina;
+* Turma (opcional, entre as turmas da disciplina escolhida);
 * Busca de questões;
 * Filtros;
-* Seleção das questões;
+* Seleção das questões do banco;
 * Contador de questões selecionadas;
-* Visualização dos detalhes das questões.
+* Visualização dos detalhes das questões;
+* Opções "Embaralhar questões" e "Embaralhar alternativas";
+* Salvar como rascunho ou postar a prova.
+
+Ao embaralhar as alternativas, a alternativa correta acompanha a nova posição, então o gabarito e a correção continuam certos (`lib/utils/embaralhar.dart`). A mesma janela é usada para editar uma prova em rascunho ou já postada.
 
 ---
 
@@ -348,7 +375,7 @@ Elementos principais:
 
 ### 6.8 Correção da Prova
 
-Tela em que o professor corrige a prova de um aluno. Ela é aberta pelos detalhes de uma prova já postada ("Corrigir prova") e também pode ser usada de novo para corrigir a prova de outro aluno. O professor informa o nome do aluno e marca a alternativa que o aluno escolheu em cada questão. O aplicativo calcula os acertos, os erros e a nota, grava o resultado na coleção `resultados` do Firestore e muda a prova para "corrigida". Em seguida, abre a tela de resultado.
+Tela em que o professor corrige a prova de um aluno. Ela é aberta pela leitura do QRCode da prova (6.14) ou pelos detalhes de uma prova já postada ("Corrigir prova"), e também pode ser usada de novo para corrigir a prova de outro aluno. O professor informa o nome do aluno e marca a alternativa que o aluno escolheu em cada questão. O aplicativo calcula os acertos, os erros e a nota, grava o resultado na coleção `resultados` do Firestore e muda a prova para "corrigida". Em seguida, abre a tela de resultado.
 
 ![Tela Correção da Prova](docs/telas/08-correcao.png)
 
@@ -379,35 +406,105 @@ Elementos principais:
 * Quantidade de alunos corrigidos;
 * Média da turma;
 * Lista de alunos, em ordem alfabética, com a nota e os acertos de cada um;
+* Botão "Exportar relatório (PDF)";
 * Estados de carregando, erro (com "Tentar novamente") e "Nenhum aluno corrigido".
+
+O relatório em PDF (`lib/utils/relatorio_pdf.dart`) traz o título, a disciplina, a turma e o status da prova, a quantidade de alunos corrigidos, a média da turma, a maior e a menor nota, e uma tabela com os acertos e a nota de cada aluno.
+
+---
+
+### 6.10 Criar Conta
+
+Tela de cadastro do professor, aberta pelo link "Ainda não tem conta? Criar conta" no login.
+
+Elementos principais:
+
+* Nome completo (mínimo de 3 caracteres);
+* E-mail;
+* Instituição (opcional);
+* Disciplinas, separadas por vírgula (opcional);
+* Senha (mínimo de 6 caracteres) e confirmação da senha;
+* Botão "Criar conta".
+
+A conta é criada no Firebase Authentication e o perfil (nome, e-mail, instituição e disciplinas) é gravado na coleção `usuarios`, sem a senha. Depois do cadastro, o professor já entra no aplicativo.
+
+Para a conta nova não começar vazia, o cadastro grava dados de exemplo (`lib/data/dados_demo.dart`): 50 questões no banco (10 de cada disciplina: Matemática, Ciências, História, Geografia e Português), a turma "8º ano A" de Matemática e a prova postada "Avaliação de Matemática — 8º ano A", com 5 questões. Essa prova tem sempre o mesmo id e o mesmo conteúdo, então o PDF dela pode ser impresso antes e o QRCode impresso funciona na conta criada depois. A cada conta nova, a prova de exemplo passa a ser dessa conta.
+
+---
+
+### 6.11 Turmas e Disciplinas
+
+Tela aberta pela aba "Turmas" do menu inferior. Lista as turmas do professor gravadas na coleção `turmas` do Firestore.
+
+Elementos principais:
+
+* Lista das turmas, com o nome e a disciplina;
+* Botão "Nova turma", com o nome da turma e a disciplina;
+* Excluir turma, com confirmação;
+* Estados de carregando, erro e "Nenhuma turma criada".
+
+---
+
+### 6.12 Visualizar Prova
+
+Tela aberta por "Ver questões da prova" nos detalhes de uma prova. Mostra a prova como foi gerada, já com a ordem das questões e das alternativas depois do embaralhamento, e destaca a alternativa correta de cada questão.
+
+---
+
+### 6.13 PDF da Prova e Gabarito com QRCode
+
+Gerado por "Exportar PDF (prova e gabarito)" nos detalhes de uma prova (`lib/utils/prova_pdf.dart`). O PDF tem duas partes, em páginas separadas:
+
+* **Folha de questões:** título, disciplina, turma, campos de nome e data do aluno, o QRCode da prova e as questões com as alternativas;
+* **Gabarito:** em página separada das questões, com o QRCode da prova e a alternativa correta de cada questão.
+
+O PDF pode ser visualizado, impresso ou compartilhado pelo próprio celular.
+
+---
+
+### 6.14 Leitura do QRCode
+
+Tela aberta pelo botão "Ler QRCode" em Minhas Provas ou por "Corrigir lendo o QRCode do gabarito" nos detalhes de uma prova. Usa a câmera do celular para ler o QRCode:
+
+* **QRCode da prova (impresso no PDF):** o aplicativo reconhece a prova e abre a tela de correção (6.8);
+* **QRCode do gabarito do aluno (6.15):** o aplicativo corrige a prova sozinho, salva o resultado e mostra a nota.
+
+O aplicativo avisa quando o QRCode é de outra prova, de uma prova que não é do professor logado ou de uma prova ainda em rascunho.
+
+---
+
+### 6.15 Gabarito do Aluno
+
+Tela aberta por "Gerar gabarito do aluno (QRCode)" nos detalhes de uma prova postada. O aluno informa o nome e marca a alternativa de cada questão; a tela gera um QRCode com o nome e as respostas. Ao ler esse QRCode (6.14), a correção é feita sem marcação manual.
 
 ---
 
 ## 7. Fluxo Principal do Sistema
 
-
+```text
 ABERTURA
    ↓
-LOGIN
+LOGIN ←→ CRIAR CONTA
    ↓
-MINHAS PROVAS
+MINHAS PROVAS ──→ TURMAS (nova turma/disciplina)
+   │
+   ├──→ BANCO DE QUESTÕES ──→ NOVA QUESTÃO
+   │
    ↓
-┌─────────────────────┐
-│                     │
-↓                     ↓
-CRIAR PROVA      BANCO DE QUESTÕES
-│                     │
-↓                     ↓
-SELECIONAR        NOVA QUESTÃO
-QUESTÕES              │
-│                     ↓
-└──────────────→ BANCO DE QUESTÕES
-          ↓
-      CRIAR PROVA
-          ↓
-       CORREÇÃO
-          ↓
-   RESULTADO DA PROVA
+NOVA PROVA (questões do banco + turma + embaralhamento)
+   ↓
+VISUALIZAR / EDITAR PROVA
+   ↓
+EXPORTAR PDF (questões + gabarito com QRCode)
+   ↓
+LEITURA DO QRCODE
+   ↓
+CORREÇÃO (nota calculada e salva)
+   ↓
+RESULTADO DA PROVA
+   ↓
+LISTA DE RESULTADOS (status "Corrigida" + relatório em PDF)
+```
 
 ---
 
@@ -431,32 +528,31 @@ Os wireframes validaram o fluxo de utilização do aplicativo, e as telas implem
 
 ## 10. Status do Projeto
 
-Status: Em desenvolvimento 🚧
+Status: Concluído ✅
 
-Entrega atual: N2.
+Entrega atual: entrega final (N3).
 
-O aplicativo já possui código Flutter funcional para as telas de abertura, login, perfil, minhas provas, criar prova, banco de questões, nova questão e resultado da prova. Nesta etapa as principais telas já leem e gravam no Firestore:
+O aplicativo cobre todo o fluxo pedido pelo cliente, do cadastro do professor ao relatório da prova corrigida, com os dados no Firebase:
 
+* **Cadastro e login:** a conta do professor é criada e validada pelo Firebase Authentication, e o perfil fica na coleção `usuarios` (RF01, RF23 e RNF04);
+* **Turmas e disciplinas:** cadastro e exclusão de turmas na coleção `turmas`, e associação da prova a uma turma (RF24 e RF25);
+* **Embaralhamento:** ao gerar a prova, as questões e as alternativas podem ser embaralhadas, e a alternativa correta acompanha a nova posição (RF26);
+* **Visualizar e editar prova:** "Ver questões da prova" mostra a prova gerada e "Editar prova" altera rascunhos e provas postadas (RF27);
+* **PDF com QRCode:** a prova é exportada em PDF com as questões e, em página separada, o gabarito com o QRCode (RF28);
+* **Correção pelo QRCode:** a câmera lê o QRCode da prova ou do gabarito do aluno, e a nota é calculada, salva e mostrada na tela (RF16 e RF29);
+* **Status e relatório:** a prova corrigida aparece como "Corrigida" e a lista de resultados gera o relatório em PDF (RF30);
 * **Minhas Provas:** lista, pesquisa e filtra as provas gravadas no Firestore, cria novas provas e atualiza rascunhos e provas postadas;
 * **Banco de Questões e Nova Questão:** a tela lista as questões do Firestore ao abrir e permite criar, editar, duplicar e excluir questões (inclusive rascunhos) direto no Firestore;
 * **Criar Prova:** a seleção de questões lê as questões publicadas do Firestore (sem rascunhos), com busca e filtro por dificuldade, e tem estados de carregando, erro e vazio (RF07);
-* **Camada de acesso a dados:** `ProvasRepository`, `QuestoesRepository` e `ResultadosRepository`, em `lib/data/`, gravam o `professorId` e filtram as consultas por ele (RNF08);
+* **Camada de acesso a dados:** `ProvasRepository`, `QuestoesRepository`, `ResultadosRepository` e `TurmasRepository`, em `lib/data/`, gravam o `professorId` e filtram as consultas por ele (RNF08); o `UsuariosRepository` guarda o perfil do professor;
 * **Tratamento de erros:** mensagens de erro, estados de carregando, lista vazia e erro, e avisos nas telas (RNF09);
-* **Correção da prova:** o professor informa o nome do aluno e marca as respostas; o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados` e muda a prova para "corrigida" (RF16);
+* **Correção da prova:** aberta pela leitura do QRCode; o aplicativo calcula acertos, erros e nota, grava o resultado na coleção `resultados` e muda a prova para "corrigida" (RF16);
 * **Lista de resultados:** "Visualizar Resultados" em Minhas Provas lista os resultados reais da prova lidos do Firestore, com a média da turma e a nota e os acertos de cada aluno (RF17 a RF21);
 * **Resultado da prova:** mostra o nome do aluno, a nota, os acertos e erros e a correção detalhada, e pode ser compartilhado pelo menu de compartilhamento do celular (RF22).
 
-O que ainda é local ou de exemplo:
+O que continua parcial:
 
-* O login usa usuários de teste que ficam no próprio aplicativo (`lib/screens/login/mock_usuario.dart`). O Firebase Authentication não foi implementado e a coleção `usuarios` ainda não é lida nem gravada;
-* As respostas de cada aluno são marcadas manualmente pelo professor na tela de correção, pois a leitura por QR Code ainda não existe;
-* O filtro por professor (RNF08) é feito pelo aplicativo. As regras de segurança do Firestore só poderão garantir isso quando houver autenticação.
-
-Ainda não foram implementados:
-
-* Leitura do QR Code e do gabarito da prova do aluno (hoje o professor marca as respostas manualmente na correção);
-* Autenticação pelo Firebase (RF01 e RNF04, parciais);
-* Fluxo completo de recuperação de senha (RF02, parcial).
+* Recuperação de senha (RF02): "Esqueci minha senha" mostra um aviso orientando o professor a falar com a instituição.
 
 Vídeo de apresentação: https://www.youtube.com/watch?v=Q-urOUDrMoM
 
@@ -469,24 +565,27 @@ O ProvaLeve usa o **Cloud Firestore** (Firebase) como banco de dados. A tabela m
 | ------------------- | -------- | ------ | --------- |
 | Inicialização do Firebase | Conexão do aplicativo com o projeto Firebase | Integrada | `lib/main.dart` e `lib/firebase_options.dart` |
 | Classes de domínio | Conversão de e para o Firestore (`toMap` e `fromMap`) | Integrada | `lib/models/` |
-| Login | Entrar com e-mail e senha | Local (usuários de teste) | `lib/screens/login/mock_usuario.dart` |
+| Criar Conta | Criar a conta e gravar o perfil do professor | Integrada | `lib/utils/autenticacao.dart` e `UsuariosRepository` |
+| Login | Entrar com e-mail e senha | Integrada (Firebase Authentication) | `lib/utils/autenticacao.dart` |
 | Recuperar senha | Aviso para falar com a instituição | Local | `lib/screens/login/` |
+| Turmas | Listar, criar e excluir turmas e disciplinas | Integrada | `TurmasRepository` |
 | Minhas Provas | Listar, pesquisar, filtrar, criar e atualizar provas | Integrada | `ProvasRepository` |
 | Criar Prova | Listar as questões publicadas para seleção | Integrada | `QuestoesRepository` |
 | Banco de Questões | Listar, editar, duplicar e excluir questões | Integrada | `QuestoesRepository` |
 | Nova Questão | Criar questão e salvar como rascunho | Integrada | `QuestoesRepository` |
-| Correção da Prova | Gravar o resultado do aluno e mudar a prova para "corrigida" | Integrada | `ResultadosRepository` e `ProvasRepository` |
+| Correção pelo QRCode | Gravar o resultado do aluno e mudar a prova para "corrigida" | Integrada | `ResultadosRepository` e `ProvasRepository` |
 | Lista de Resultados e Resultado da Prova | Ler os resultados gravados de uma prova | Integrada | `ResultadosRepository` |
-| Perfil | Mostrar os dados do professor logado | Local (usuário de teste) | `lib/screens/perfil/` |
+| PDF da prova e relatório | Gerar os PDFs no próprio celular | Local (gerado no aparelho) | `lib/utils/prova_pdf.dart` e `lib/utils/relatorio_pdf.dart` |
+| Perfil | Mostrar os dados do professor logado | Integrada | `UsuariosRepository` |
 
 Legenda:
 
 * **Integrada:** a parte lê ou grava os dados no Firestore, sem lista fixa no código;
-* **Local:** a parte ainda usa dados que ficam dentro do aplicativo.
+* **Local:** a parte não depende do banco de dados.
 
 Validação e tratamento de erros nas operações com o banco:
 
-* Os campos são validados antes de gravar. O login usa os validadores de `lib/utils/validators.dart` (e-mail e senha). O cadastro de questão exige a disciplina, o enunciado (mínimo de 10 caracteres), todas as alternativas preenchidas e sem repetição, e a alternativa correta marcada;
+* Os campos são validados antes de gravar. O login e o cadastro usam os validadores de `lib/utils/validators.dart` (nome, e-mail, senha e confirmação da senha), e os erros do Firebase Authentication (e-mail já cadastrado, senha fraca, e-mail ou senha inválidos, sem internet) viram mensagens claras para o professor. O cadastro de questão exige a disciplina, o enunciado (mínimo de 10 caracteres), todas as alternativas preenchidas e sem repetição, e a alternativa correta marcada;
 * Ao editar uma questão, "Salvar rascunho" também exige os dados completos, para não sobrescrever no banco uma questão válida com dados incompletos;
 * Editar, duplicar e excluir mostram um aviso de sucesso ou de erro ao gravar, e excluir pede confirmação antes;
 * As listas têm estados de carregando, vazio e erro (RNF09).
@@ -497,8 +596,8 @@ Os campos de cada coleção estão na seção [14. Modelo de Dados](#14-modelo-d
 
 A conexão do aplicativo Android com o Firebase foi feita assim:
 
-1. O projeto **ProvaLeve** (`provaleve-46c08`, plano Spark) foi criado no console do Firebase e o **Cloud Firestore** foi ativado;
-2. As dependências `firebase_core` e `cloud_firestore` foram adicionadas ao `pubspec.yaml` (versões na seção [12. Stack Tecnológica](#12-stack-tecnológica));
+1. O projeto **ProvaLeve** (`provaleve-46c08`, plano Spark) foi criado no console do Firebase, e o **Cloud Firestore** e o **Authentication** (login por e-mail e senha) foram ativados;
+2. As dependências `firebase_core`, `cloud_firestore` e `firebase_auth` foram adicionadas ao `pubspec.yaml` (versões na seção [12. Stack Tecnológica](#12-stack-tecnológica));
 3. O comando `flutterfire configure` (plataforma Android) gerou o arquivo `lib/firebase_options.dart` e o arquivo `android/app/google-services.json`;
 4. No `lib/main.dart`, o Firebase é inicializado antes de abrir o aplicativo:
 
@@ -515,8 +614,7 @@ Future<void> main() async {
 Observações:
 
 * O `google-services.json` não fica no repositório. Para rodar o aplicativo, veja o passo 2 da seção [11. Como Rodar o Projeto](#11-como-rodar-o-projeto);
-* O acesso ao console do Firebase é feito por permissão da conta. Para ver os dados no console, peça ao responsável pelo Firebase do grupo para adicionar o seu e-mail ao projeto;
-* O filtro por professor (RNF08) é feito pelo aplicativo. As regras de segurança do Firestore só poderão garantir esse acesso quando o login passar a usar o Firebase Authentication.
+* O acesso ao console do Firebase é feito por permissão da conta. Para ver os dados no console, peça ao responsável pelo Firebase do grupo para adicionar o seu e-mail ao projeto.
 
 ---
 
@@ -526,8 +624,10 @@ Observações:
 
 * [Flutter SDK](https://docs.flutter.dev/get-started/install) com Dart ^3.13.2;
 * Android Studio (ou VS Code) com o plugin do Flutter;
-* Um emulador Android ou um celular com depuração USB ativada;
+* Um emulador Android ou um celular com depuração USB ativada (para ler o QRCode, use um celular com câmera);
 * Git.
+
+O aplicativo está configurado para **Android**. As versões para Windows, web e iOS não têm o Firebase configurado.
 
 Para conferir o ambiente:
 
@@ -558,7 +658,15 @@ flutter run
 ### Observações
 
 * **Passo 2, obrigatório:** para compilar o app, é necessário o arquivo `google-services.json` do projeto Firebase em `android/app/google-services.json`. Ele não fica no repositório (está no `.gitignore`); peça ao responsável pelo Firebase do grupo e copie o arquivo para essa pasta antes de rodar o `flutter run`.
-* Para entrar no aplicativo, use um dos usuários de teste: `professor@escola.com` / `provaleve` ou `caua@provaleve.com` / `123456`.
+* Para entrar no aplicativo, crie uma conta em "Ainda não tem conta? Criar conta" na tela de login e depois entre com o e-mail e a senha cadastrados.
+
+### Gerar o APK
+
+```bash
+flutter build apk --release
+```
+
+O APK fica em `build/app/outputs/flutter-apk/app-release.apk`. Para instalar, copie o arquivo para o celular Android e abra-o (é preciso permitir a instalação de fontes desconhecidas).
 
 ---
 
@@ -573,7 +681,12 @@ flutter run
 * **Dart:** linguagem do aplicativo, com SDK `^3.13.2` (definido no `pubspec.yaml`);
 * **Firebase:** plataforma do projeto, inicializada no app pelo `firebase_core` (`^5.1.0`);
 * **Cloud Firestore:** banco de dados NoSQL do projeto, acessado pelo pacote `cloud_firestore` (`^7.1.0`);
-* **share_plus:** pacote (`^13.3.1`) usado para compartilhar o resultado da prova pelo menu de compartilhamento do celular.
+* **Firebase Authentication:** cadastro e login do professor por e-mail e senha, pelo pacote `firebase_auth` (`^7.1.0`);
+* **share_plus:** pacote (`^13.3.1`) usado para compartilhar o resultado da prova pelo menu de compartilhamento do celular;
+* **pdf** (`^3.11.3`) e **printing** (`^5.14.2`): geração do PDF da prova, do gabarito e do relatório, e a visualização, impressão e compartilhamento do PDF;
+* **barcode** (`^2.2.8`): desenho do QRCode dentro do PDF;
+* **qr_flutter** (`^4.1.0`): QRCode do gabarito do aluno na tela do celular;
+* **mobile_scanner** (`^7.0.1`): leitura do QRCode pela câmera do celular.
 
 ---
 
@@ -583,19 +696,24 @@ flutter run
 app-mobile/
 ├── docs/
 │   ├── modelo_firestore.md
-│   └── telas/
+│   ├── telas/
+│   └── testes/
 ├── lib/
 │   ├── data/
+│   │   ├── dados_demo.dart
 │   │   ├── firestore_repository.dart
 │   │   ├── provas_repository.dart
 │   │   ├── questoes_repository.dart
-│   │   └── resultados_repository.dart
+│   │   ├── resultados_repository.dart
+│   │   ├── turmas_repository.dart
+│   │   └── usuarios_repository.dart
 │   ├── models/
 │   │   ├── alternativa.dart
 │   │   ├── prova.dart
 │   │   ├── questao.dart
 │   │   ├── resultado.dart
 │   │   ├── sessao.dart
+│   │   ├── turma.dart
 │   │   └── usuario.dart
 │   ├── screens/
 │   │   ├── correcao/
@@ -604,10 +722,15 @@ app-mobile/
 │   │   ├── provas/
 │   │   ├── questoes/
 │   │   ├── resultados/
+│   │   ├── turmas/
 │   │   └── splash.dart
 │   ├── utils/
+│   │   ├── autenticacao.dart
 │   │   ├── correcao.dart
+│   │   ├── embaralhar.dart
 │   │   ├── mensagem_erro.dart
+│   │   ├── prova_pdf.dart
+│   │   ├── relatorio_pdf.dart
 │   │   └── validators.dart
 │   ├── widgets/
 │   │   └── estado_tela.dart
@@ -619,18 +742,19 @@ app-mobile/
 └── pubspec.yaml
 ```
 
-* **docs/:** documentação do projeto. `modelo_firestore.md` descreve as coleções do Firestore e `telas/` guarda os prints das telas usados neste README;
-* **lib/data/:** camada de acesso ao Firestore. `FirestoreRepository` tem as operações comuns (listar, buscar, criar, atualizar e excluir, com `professorId`) e cada coleção tem o seu repositório;
-* **lib/models/:** classes de domínio (`Usuario`, `Questao`, `Alternativa`, `Prova`, `Resultado`), com conversão de e para o Firestore (`toMap` e `fromMap`), e a `Sessao`, que guarda o professor logado;
+* **docs/:** documentação do projeto. `modelo_firestore.md` descreve as coleções do Firestore, `telas/` guarda os prints das telas usados neste README e `testes/` traz o relatório de testes do fluxo completo com as evidências;
+* **lib/data/:** camada de acesso ao Firestore. `FirestoreRepository` tem as operações comuns (listar, buscar, criar, atualizar e excluir, com `professorId`) e cada coleção tem o seu repositório; o `UsuariosRepository` guarda o perfil do professor, com o uid do Firebase Authentication como id;
+* **lib/models/:** classes de domínio (`Usuario`, `Questao`, `Alternativa`, `Prova`, `Resultado`, `Turma`), com conversão de e para o Firestore (`toMap` e `fromMap`), e a `Sessao`, que guarda o professor logado;
 * **lib/screens/:** as telas do aplicativo, uma subpasta para cada área:
-  * **correcao/:** tela de correção da prova (`correcao_prova_screen.dart`);
-  * **login/:** tela de login e os usuários de teste (`mock_usuario.dart`);
+  * **correcao/:** correção da prova (`correcao_prova_screen.dart`), leitura do QRCode pela câmera (`leitor_qr_screen.dart`) e gabarito do aluno com QRCode (`gabarito_aluno_screen.dart`);
+  * **login/:** tela de login, tela de cadastro (`cadastro_screen.dart`) e os usuários de teste usados no desenvolvimento (`mock_usuario.dart`);
   * **perfil/:** tela de perfil do professor;
-  * **provas/:** listagem de provas (Minhas Provas) e criação de prova (tela e janela de criação);
+  * **provas/:** listagem de provas (Minhas Provas), janela de criação e edição de prova (`criar_prova_modal.dart`) e visualização da prova (`visualizar_prova_screen.dart`);
   * **questoes/:** banco de questões, cadastro de nova questão e a classe `QuestaoCadastrada`;
   * **resultados/:** lista de resultados de uma prova (`lista_resultados_screen.dart`) e tela de resultado de um aluno (`resultado_prova_screen.dart`);
+  * **turmas/:** turmas e disciplinas do professor (`turmas_screen.dart`);
   * **splash.dart:** tela de abertura;
-* **lib/utils/:** funções de apoio: validação de campos (`validators.dart`) e a conta da correção (`correcao.dart`), além das mensagens de erro para o professor (`mensagem_erro.dart`);
+* **lib/utils/:** funções de apoio: cadastro e login pelo Firebase Authentication (`autenticacao.dart`), validação de campos (`validators.dart`), a conta da correção (`correcao.dart`), o embaralhamento de questões e alternativas (`embaralhar.dart`), o PDF da prova com o gabarito e o QRCode (`prova_pdf.dart`), o relatório em PDF (`relatorio_pdf.dart`) e as mensagens de erro para o professor (`mensagem_erro.dart`);
 * **lib/widgets/:** componentes reutilizáveis; `estado_tela.dart` traz os estados de carregando, lista vazia e erro;
 * **test/:** testes automatizados: `correcao_test.dart` (conta da correção e leitura do resultado) e `mensagem_erro_test.dart` (mensagens de erro).
 
@@ -638,16 +762,17 @@ app-mobile/
 
 ## 14. Modelo de Dados
 
-O ProvaLeve guarda os dados em quatro coleções na raiz do Firestore. Em todas elas o id do documento é o mesmo `id` da classe de domínio.
+O ProvaLeve guarda os dados em cinco coleções na raiz do Firestore. Em todas elas o id do documento é o mesmo `id` da classe de domínio; em `usuarios`, é o uid do Firebase Authentication.
 
 | Coleção | O que guarda | Situação no app |
 | ------- | ------------ | --------------- |
-| `usuarios` | Dados do professor: nome, e-mail, instituição e disciplinas (a senha não é gravada). | Ainda não é lida nem gravada, pois o login usa usuários de teste. |
+| `usuarios` | Dados do professor: nome, e-mail, instituição e disciplinas (a senha não é gravada; ela fica no Firebase Authentication). | Gravada no cadastro e lida no login. |
+| `turmas` | Turmas do professor: nome e disciplina. | Lida, gravada e excluída pela tela de turmas e lida na criação da prova. |
 | `questoes` | Banco de questões do professor: disciplina, dificuldade, rascunho, enunciado, alternativas e alternativa correta. | Lida, gravada, editada e excluída pelo banco de questões. |
-| `provas` | Provas montadas pelo professor: título, disciplina, situação, data e uma cópia das questões escolhidas. | Lida e gravada pela tela Minhas Provas. |
-| `resultados` | Resultado da correção de um aluno: prova corrigida, nome do aluno, respostas marcadas e nota. | Gravada pela tela de correção (um documento por aluno corrigido, com o nome do aluno) e lida pela lista de resultados da prova. |
+| `provas` | Provas montadas pelo professor: título, disciplina, situação, data, turma (`turmaId` e `turmaNome`) e uma cópia das questões escolhidas, já na ordem embaralhada. | Lida e gravada pela tela Minhas Provas. |
+| `resultados` | Resultado da correção de um aluno: prova corrigida, nome do aluno, respostas marcadas e nota. | Gravada pela correção (um documento por aluno corrigido, com o nome do aluno) e lida pela lista de resultados e pelo relatório. |
 
-As coleções `questoes`, `provas` e `resultados` guardam o `professorId`, que liga cada documento ao professor dono dele e permite listar só os dados dele (RNF08). A prova guarda uma cópia das questões, então editar ou excluir uma questão do banco não altera uma prova já montada.
+As coleções `turmas`, `questoes`, `provas` e `resultados` guardam o `professorId`, que liga cada documento ao professor dono dele e permite listar só os dados dele (RNF08). A prova guarda uma cópia das questões, então editar ou excluir uma questão do banco não altera uma prova já montada.
 
 O diagrama, os campos de cada coleção e as decisões de modelagem estão em [docs/modelo_firestore.md](docs/modelo_firestore.md).
 
@@ -712,3 +837,38 @@ O backlog segue o planejamento da N2 (`PlanejamentoN2.xlsx`). O status considera
 | 15. Ajustes pendentes da N1 (telas/RF) | 23/10/2026 | Concluído |
 | 18. Revisão e merge dos PRs (semanas 1 a 4) | 27/10/2026 | Concluído |
 | 26. Diário de bordo individual – Matheus Henrique Pompeu | 29/10/2026 | Concluído |
+
+---
+
+## 16. Entrega Final (N3)
+
+Na entrega final, o aplicativo recebeu as funcionalidades pedidas pelo cliente para completar o fluxo de criação, impressão e correção das provas (PR #47):
+
+| Funcionalidade | Requisito | Onde está |
+| -------------- | --------- | --------- |
+| Criar conta com Firebase Authentication | RF23 | `lib/screens/login/cadastro_screen.dart` e `lib/utils/autenticacao.dart` |
+| Login pelo Firebase Authentication | RF01 e RNF04 | `lib/screens/login/login.dart` e `lib/utils/autenticacao.dart` |
+| Turmas e disciplinas no Firestore, com a prova associada a uma turma | RF24 e RF25 | `lib/screens/turmas/` e `lib/data/turmas_repository.dart` |
+| Embaralhar questões e alternativas ao gerar a prova | RF26 | `lib/utils/embaralhar.dart` |
+| Ver as questões e editar a prova postada | RF27 | `lib/screens/provas/visualizar_prova_screen.dart` e `criar_prova_modal.dart` |
+| Exportar o PDF da prova e do gabarito com QRCode | RF28 | `lib/utils/prova_pdf.dart` |
+| Corrigir a prova pela leitura do QRCode, com a nota calculada e salva | RF16 e RF29 | `lib/screens/correcao/` |
+| Gerar o QRCode do gabarito do aluno | RF29 | `lib/screens/correcao/gabarito_aluno_screen.dart` |
+| Relatório em PDF da prova corrigida | RF30 | `lib/utils/relatorio_pdf.dart` |
+| Dados de exemplo gravados no cadastro (questões, turma e prova de demonstração) | — | `lib/data/dados_demo.dart` |
+| Sair da conta também desconecta do Firebase Authentication | RNF04 | `lib/screens/perfil/perfil_screen.dart` e `lib/utils/autenticacao.dart` |
+
+### Roteiro da apresentação
+
+A demonstração segue a ordem das funcionalidades pedidas pelo cliente:
+
+1. Criar uma nova conta de professor;
+2. Fazer login com a conta criada;
+3. Criar uma turma/disciplina;
+4. Cadastrar uma questão no banco de questões;
+5. Gerar uma prova com questões do banco, configurando o embaralhamento de questões e de alternativas;
+6. Abrir a prova gerada para conferir e editar;
+7. Exportar a prova em PDF, com a folha de questões e, em página separada, o gabarito com QRCode;
+8. Corrigir a prova impressa pela leitura do QRCode, exibindo a nota do aluno;
+9. Mostrar que a nota foi salva na lista de resultados;
+10. Mostrar o status "Corrigida" da prova e o relatório em PDF.

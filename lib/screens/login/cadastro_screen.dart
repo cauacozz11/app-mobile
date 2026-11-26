@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:app_mobile/data/dados_demo.dart';
 import 'package:app_mobile/models/sessao.dart';
 import 'package:app_mobile/utils/autenticacao.dart';
 import 'package:app_mobile/utils/validators.dart';
@@ -65,6 +66,11 @@ class _CadastroScreenState extends State<CadastroScreen> {
             .toList(),
       );
       Sessao.entrar(usuario);
+      try {
+        await carregarDadosDemo();
+      } catch (_) {
+        // A conta já foi criada; sem os dados de exemplo o app continua funcionando.
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
