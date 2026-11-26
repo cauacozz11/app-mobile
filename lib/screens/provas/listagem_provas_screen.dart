@@ -1237,7 +1237,8 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
               ),
               const SizedBox(height: 8),
             ],
-            if (item.status == StatusProva.corrigida) ...[
+            if (item.status == StatusProva.pronta ||
+                item.status == StatusProva.corrigida) ...[
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
