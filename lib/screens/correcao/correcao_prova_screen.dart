@@ -21,9 +21,18 @@ class _Cores {
 /// grava o [Resultado] no Firestore e marca a prova como corrigida.
 /// Devolve o [Resultado] salvo no `pop`, ou `null` se o professor desistir.
 class CorrecaoProvaScreen extends StatefulWidget {
-  const CorrecaoProvaScreen({super.key, required this.prova});
+  const CorrecaoProvaScreen({
+    super.key,
+    required this.prova,
+    this.respostasIniciais,
+    this.nomeInicial,
+  });
 
   final Prova prova;
+
+  /// Respostas já lidas da foto da folha (o professor ainda pode ajustar).
+  final List<int>? respostasIniciais;
+  final String? nomeInicial;
 
   @override
   State<CorrecaoProvaScreen> createState() => _CorrecaoProvaScreenState();
@@ -42,7 +51,12 @@ class _CorrecaoProvaScreenState extends State<CorrecaoProvaScreen> {
   @override
   void initState() {
     super.initState();
-    _respostas = List.filled(_questoes.length, semResposta);
+    final lidas = widget.respostasIniciais;
+    _respostas = [
+      for (var i = 0; i < _questoes.length; i++)
+        lidas != null && i < lidas.length ? lidas[i] : semResposta,
+    ];
+    _nomeAlunoCtrl.text = widget.nomeInicial ?? '';
   }
 
   @override

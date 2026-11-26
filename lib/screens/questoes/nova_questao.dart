@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:app_mobile/models/alternativa.dart';
 import 'package:app_mobile/models/questao.dart';
+import 'package:app_mobile/utils/disciplinas.dart';
 import 'questao_cadastrada.dart';
 
 class _Cores {
@@ -13,14 +14,6 @@ class _Cores {
   static const Color subtitleColor = Color(0xFF3A484D);
   static const Color danger = Color(0xFFD16A6A);
 }
-
-const List<String> _disciplinas = [
-  'Matemática',
-  'Ciências',
-  'História',
-  'Geografia',
-  'Português',
-];
 
 const String _dificuldadePadrao = 'Fácil';
 
@@ -44,6 +37,7 @@ class _NovaQuestaoScreenState extends State<NovaQuestaoScreen> {
 
   late final TextEditingController _enunciadoController;
   String? _disciplina;
+  final List<String> _disciplinasExtras = [];
   final List<_AlternativaEdit> _alternativas = [];
   int _indiceCorreta = -1;
   String? _erro;
@@ -327,10 +321,26 @@ class _NovaQuestaoScreenState extends State<NovaQuestaoScreen> {
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
-          items: _disciplinas
-              .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-              .toList(),
-          onChanged: (valor) => setState(() => _disciplina = valor),
+          items: [
+            for (final d in disciplinasDisponiveis(
+              atual: _disciplina,
+              extras: _disciplinasExtras,
+            ))
+              DropdownMenuItem(value: d, child: Text(d)),
+            itemOutraDisciplina(),
+          ],
+          onChanged: (valor) async {
+            if (valor == outraDisciplina) {
+              final nova = await pedirNovaDisciplina(context);
+              if (!mounted || nova == null) return;
+              setState(() {
+                _disciplinasExtras.add(nova);
+                _disciplina = nova;
+              });
+              return;
+            }
+            setState(() => _disciplina = valor);
+          },
         ),
       ),
     );

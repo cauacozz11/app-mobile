@@ -4,7 +4,7 @@ import 'package:printing/printing.dart';
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/resultado.dart';
 import 'package:app_mobile/screens/correcao/correcao_prova_screen.dart';
-import 'package:app_mobile/screens/correcao/gabarito_aluno_screen.dart';
+import 'package:app_mobile/screens/correcao/corrigir_gabarito_screen.dart';
 import 'package:app_mobile/screens/correcao/leitor_qr_screen.dart';
 import 'package:app_mobile/data/resultados_repository.dart';
 import 'package:app_mobile/utils/correcao.dart';
@@ -16,6 +16,7 @@ import 'package:app_mobile/screens/turmas/turmas_screen.dart';
 import 'package:app_mobile/screens/provas/visualizar_prova_screen.dart';
 import 'package:app_mobile/data/provas_repository.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
+import 'package:app_mobile/utils/folha_layout.dart';
 import 'package:app_mobile/utils/prova_pdf.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
 
@@ -269,7 +270,7 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                           'Ler QRCode',
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
-                        onPressed: () => _lerQrCode(),
+                        onPressed: _lerQrCode,
                       ),
                     ],
                   ),
@@ -997,8 +998,18 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
   }
 
   Future<void> _exportarPdf(ProvaItemVisual item) async {
+    if (item.prova.questoes.length > FolhaLayout.maxQuestoes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A folha de respostas comporta até 50 questões.'),
+        ),
+      );
+      return;
+    }
+    final alunos = await _pedirAlunos();
+    if (!mounted || alunos == null) return;
     try {
-      final bytes = await gerarPdfProva(item.prova);
+      final bytes = await gerarPdfProva(item.prova, alunos: alunos);
       await Printing.sharePdf(bytes: bytes, filename: nomeArquivoPdf(item.prova));
     } catch (e) {
       if (!mounted) return;
@@ -1008,10 +1019,49 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     }
   }
 
-  /// Lê o QRCode do gabarito. Se o código traz as respostas do aluno, corrige
-  /// sozinho e mostra a nota; se traz só a prova, abre a correção manual.
-  /// Com [prova], só aceita QRCode dessa prova.
-  Future<void> _lerQrCode({ProvaItemVisual? prova}) async {
+  /// Pergunta para quais alunos gerar as cópias (um nome por linha).
+  /// Devolve lista vazia para uma cópia em branco, ou `null` se cancelar.
+  Future<List<AlunoCopia>?> _pedirAlunos() {
+    final controlador = TextEditingController();
+    return showDialog<List<AlunoCopia>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exportar PDF'),
+        content: TextField(
+          controller: controlador,
+          minLines: 4,
+          maxLines: 8,
+          decoration: const InputDecoration(
+            helperText:
+                'Um aluno por linha. Deixe vazio para uma cópia em branco.',
+            helperMaxLines: 3,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              final alunos = <AlunoCopia>[];
+              for (final linha in controlador.text.split('\n')) {
+                final nome = linha.trim();
+                if (nome.isEmpty) continue;
+                alunos.add(AlunoCopia(nome: nome));
+              }
+              Navigator.of(context).pop(alunos);
+            },
+            child: const Text('Gerar PDF'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Lê o QRCode de identificação da prova (impresso na prova) e abre essa
+  /// prova no aplicativo.
+  Future<void> _lerQrCode() async {
     final texto = await Navigator.of(context).push<String>(
       MaterialPageRoute(builder: (context) => const LeitorQrScreen()),
     );
@@ -1019,93 +1069,28 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
     if (!mounted || qr == null) return;
 
     final indice = _provas.indexWhere((p) => p.prova.id == qr.provaId);
-    final mensagem = prova != null && qr.provaId != prova.prova.id
-        ? 'Esse QRCode é de outra prova.'
-        : indice == -1
-        ? 'Essa prova não foi encontrada nas suas provas.'
-        : _provas[indice].status == StatusProva.rascunho
-        ? 'Essa prova ainda é um rascunho e não pode ser corrigida.'
-        : null;
-    if (mensagem != null) {
+    if (indice == -1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mensagem)),
+        const SnackBar(
+          content: Text('Essa prova não foi encontrada nas suas provas.'),
+        ),
       );
       return;
     }
-
-    final item = _provas[indice];
-    if (qr.respostas == null) {
-      await _abrirCorrecao(item);
-    } else {
-      await _corrigirAutomatico(item, qr);
-    }
+    _abrirDetalhesProva(_provas[indice]);
   }
 
-  Future<void> _corrigirAutomatico(ProvaItemVisual item, GabaritoQr qr) async {
-    final total = item.prova.questoes.length;
-    final marcadas = qr.respostas!;
-    final respostas = [
-      for (var i = 0; i < total; i++) i < marcadas.length ? marcadas[i] : semResposta,
-    ];
-    final correcao = corrigirProva(item.prova, respostas);
-    final resultado = Resultado(
-      id: 'res-${item.prova.id}-${DateTime.now().millisecondsSinceEpoch}',
-      provaId: item.prova.id,
-      nomeAluno: qr.aluno,
-      respostasMarcadas: respostas,
-      nota: correcao.nota,
-    );
-    final prova = Prova(
-      id: item.prova.id,
-      titulo: item.prova.titulo,
-      disciplina: item.prova.disciplina,
-      questoes: item.prova.questoes,
-      dataCriacao: item.prova.dataCriacao,
-      status: 'corrigida',
-      turmaId: item.prova.turmaId,
-      turmaNome: item.prova.turmaNome,
-    );
-
-    setState(() => _salvando = true);
-    try {
-      await ResultadosRepository.instance.criar(resultado);
-      if (item.prova.status != 'corrigida') {
-        await ProvasRepository.instance.atualizar(prova);
-      }
-      if (!mounted) return;
-      final indice = _provas.indexWhere((p) => p.prova.id == prova.id);
-      if (indice != -1) {
-        setState(() {
-          _provas[indice] = ProvaItemVisual(
-            prova: prova,
-            status: StatusProva.corrigida,
-            dataFormatada: item.dataFormatada,
-            totalQuestoes: item.totalQuestoes,
-          );
-        });
-      }
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) =>
-              ResultadoProvaScreen(prova: prova, resultado: resultado),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao salvar a correção. ${mensagemErro(e)}'),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _salvando = false);
-    }
-  }
-
-  Future<void> _abrirCorrecao(ProvaItemVisual item) async {
+  /// Abre a correção do gabarito de um aluno: pela foto da folha de respostas
+  /// ([porFoto]) ou marcando as respostas à mão.
+  Future<void> _abrirCorrecao(
+    ProvaItemVisual item, {
+    bool porFoto = false,
+  }) async {
     final resultado = await Navigator.of(context).push<Resultado>(
       MaterialPageRoute(
-        builder: (context) => CorrecaoProvaScreen(prova: item.prova),
+        builder: (context) => porFoto
+            ? CorrigirGabaritoScreen(prova: item.prova)
+            : CorrecaoProvaScreen(prova: item.prova),
       ),
     );
     if (!mounted || resultado == null) return;
@@ -1264,67 +1249,14 @@ class _ListagemProvasScreenState extends State<ListagemProvasScreen> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
-                  icon: const Icon(Icons.bar_chart_rounded),
+                  icon: const Icon(Icons.document_scanner_outlined),
                   label: const Text(
-                    'Visualizar Resultados',
+                    'Corrigir gabarito do aluno (foto)',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
-                    _abrirResultado(item);
-                  },
-                ),
-              ),
-              const SizedBox(height: 8),
-            ],
-            if (item.status != StatusProva.rascunho) ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _Cores.teal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: const Text(
-                    'Corrigir lendo o QRCode do gabarito',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _lerQrCode(prova: item);
-                  },
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _Cores.teal,
-                    side: const BorderSide(color: _Cores.teal),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  icon: const Icon(Icons.qr_code_2),
-                  label: const Text(
-                    'Gerar gabarito do aluno (QRCode)',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            GabaritoAlunoScreen(prova: item.prova),
-                      ),
-                    );
+                    _abrirCorrecao(item, porFoto: true);
                   },
                 ),
               ),

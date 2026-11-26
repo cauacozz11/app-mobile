@@ -5,6 +5,7 @@ import 'package:app_mobile/data/turmas_repository.dart';
 import 'package:app_mobile/models/turma.dart';
 import 'package:app_mobile/models/prova.dart';
 import 'package:app_mobile/models/questao.dart';
+import 'package:app_mobile/utils/disciplinas.dart';
 import 'package:app_mobile/utils/embaralhar.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
@@ -71,13 +72,7 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
   String _buscaQuestoes = '';
   String _filtroDificuldade = 'Todas';
 
-  static const List<String> _disciplinas = [
-    'Matemática',
-    'Ciências',
-    'História',
-    'Geografia',
-    'Português',
-  ];
+  final List<String> _disciplinasExtras = [];
 
   List<_QuestaoItemBanco> _questoesDisponiveis = [];
   final Set<String> _questoesSelecionadasIds = {};
@@ -389,23 +384,39 @@ class _CriarProvaModalState extends State<CriarProvaModal> {
                         Icons.keyboard_arrow_down_rounded,
                         color: _Cores.subtitleColor,
                       ),
-                      items: {..._disciplinas, _disciplinaSelecionada}.map((d) {
-                        return DropdownMenuItem<String>(
-                          value: d,
-                          child: Text(
-                            d,
-                            style: const TextStyle(
-                              color: _Cores.subtitleColor,
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w600,
+                      items: [
+                        for (final d in disciplinasDisponiveis(
+                          atual: _disciplinaSelecionada,
+                          extras: [
+                            ..._disciplinasExtras,
+                            ..._questoesDisponiveis.map((q) => q.disciplina),
+                          ],
+                        ))
+                          DropdownMenuItem<String>(
+                            value: d,
+                            child: Text(
+                              d,
+                              style: const TextStyle(
+                                color: _Cores.subtitleColor,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (novo) {
-                        if (novo != null) {
-                          setState(() => _disciplinaSelecionada = novo);
+                        itemOutraDisciplina(),
+                      ],
+                      onChanged: (novo) async {
+                        if (novo == null) return;
+                        if (novo == outraDisciplina) {
+                          final nova = await pedirNovaDisciplina(context);
+                          if (!mounted || nova == null) return;
+                          setState(() {
+                            _disciplinasExtras.add(nova);
+                            _disciplinaSelecionada = nova;
+                          });
+                          return;
                         }
+                        setState(() => _disciplinaSelecionada = novo);
                       },
                     ),
                   ),
