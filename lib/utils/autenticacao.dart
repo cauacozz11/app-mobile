@@ -44,6 +44,9 @@ class Autenticacao {
         Usuario(id: uid, nome: email, email: email, senha: '');
   }
 
+  /// Desconecta o professor do Firebase Authentication.
+  static Future<void> sair() => FirebaseAuth.instance.signOut();
+
   static String mensagem(Object erro) {
     if (erro is FirebaseAuthException) {
       switch (erro.code) {

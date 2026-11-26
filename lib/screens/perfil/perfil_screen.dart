@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:app_mobile/models/sessao.dart';
 import 'package:app_mobile/models/usuario.dart';
+import 'package:app_mobile/utils/autenticacao.dart';
 
 class _Cores {
   static const Color background = Color(0xFFF8F5F0);
@@ -76,6 +77,12 @@ class PerfilScreen extends StatelessWidget {
     if (confirmou != true || !context.mounted) return;
 
     Sessao.sair();
+    try {
+      await Autenticacao.sair();
+    } catch (_) {
+      // Mesmo sem desconectar do Firebase, a sessão do app já foi encerrada.
+    }
+    if (!context.mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (rota) => false);
   }
 
