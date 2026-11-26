@@ -74,8 +74,8 @@ class _LeitorQrScreenState extends State<LeitorQrScreen> {
               ),
               child: Text(
                 _codigoInvalido
-                    ? 'Esse QRCode não é de uma prova do ProvaLeve. Aponte para o QRCode do gabarito.'
-                    : 'Aponte a câmera para o QRCode do gabarito da prova.',
+                    ? 'Esse QRCode não é de uma prova do ProvaLeve. Aponte para o QRCode de identificação da prova.'
+                    : 'Aponte a câmera para o QRCode de identificação da prova (canto da primeira página).',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white, fontSize: 14),
               ),

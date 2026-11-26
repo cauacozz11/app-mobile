@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:app_mobile/data/turmas_repository.dart';
-import 'package:app_mobile/models/sessao.dart';
 import 'package:app_mobile/models/turma.dart';
+import 'package:app_mobile/utils/disciplinas.dart';
 import 'package:app_mobile/utils/mensagem_erro.dart';
 import 'package:app_mobile/utils/validators.dart';
 import 'package:app_mobile/widgets/estado_tela.dart';
@@ -16,14 +16,6 @@ class _Cores {
   static const Color subtitleColor = Color(0xFF3A484D);
   static const Color verde = Color(0xFF16846C);
 }
-
-const List<String> _disciplinasPadrao = [
-  'Matemática',
-  'Ciências',
-  'História',
-  'Geografia',
-  'Português',
-];
 
 /// Turmas e disciplinas do professor, gravadas na coleção `turmas` do Firestore.
 class TurmasScreen extends StatefulWidget {
@@ -205,15 +197,13 @@ class _NovaTurmaDialog extends StatefulWidget {
 class _NovaTurmaDialogState extends State<_NovaTurmaDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nomeCtrl = TextEditingController();
-  late final List<String> _disciplinas;
+  final List<String> _extras = [];
   late String _disciplina;
 
   @override
   void initState() {
     super.initState();
-    final doProfessor = Sessao.usuarioAtual?.disciplinas ?? const <String>[];
-    _disciplinas = doProfessor.isNotEmpty ? doProfessor : _disciplinasPadrao;
-    _disciplina = _disciplinas.first;
+    _disciplina = disciplinasDisponiveis().first;
   }
 
   @override
@@ -255,10 +245,26 @@ class _NovaTurmaDialogState extends State<_NovaTurmaDialog> {
             DropdownButtonFormField<String>(
               initialValue: _disciplina,
               items: [
-                for (final d in _disciplinas)
+                for (final d in disciplinasDisponiveis(
+                  atual: _disciplina,
+                  extras: _extras,
+                ))
                   DropdownMenuItem(value: d, child: Text(d)),
+                itemOutraDisciplina(),
               ],
-              onChanged: (v) => setState(() => _disciplina = v ?? _disciplina),
+              onChanged: (v) async {
+                if (v == null) return;
+                if (v == outraDisciplina) {
+                  final nova = await pedirNovaDisciplina(context);
+                  if (!mounted || nova == null) return;
+                  setState(() {
+                    _extras.add(nova);
+                    _disciplina = nova;
+                  });
+                  return;
+                }
+                setState(() => _disciplina = v);
+              },
               decoration: const InputDecoration(labelText: 'Disciplina'),
             ),
           ],
